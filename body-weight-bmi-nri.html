@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Body Weight, BMI & NRI – PharmaTool Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#f5f7fa; --surface:#fff; --border:#e2e8f0; --text:#1a2332; --muted:#64748b; --radius:18px; --accent:#0d9488; --alight:#f0fdfa; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding-bottom:60px;}
+  .hero{background:linear-gradient(160deg,#0f2942 0%,#134e4a 50%,#0d9488 100%);padding:40px 20px 32px;position:relative;overflow:hidden;}
+  .hero::before{content:'';position:absolute;top:-60px;right:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,#2dd4bf20 0%,transparent 70%);}
+  .hero::after{content:'';position:absolute;bottom:-40px;left:-20px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,#5eead420 0%,transparent 70%);}
+  .hero-inner{position:relative;z-index:1;max-width:480px;margin:0 auto;}
+  .back-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:99px;padding:5px 12px;font-size:12px;color:#99f6e4;text-decoration:none;margin-bottom:18px;font-family:'DM Mono',monospace;transition:background 0.2s;}
+  .back-btn:hover{background:rgba(255,255,255,0.2);}
+  .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:99px;padding:5px 12px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#99f6e4;font-family:'DM Mono',monospace;margin-bottom:14px;}
+  .hero-badge::before{content:'◆';font-size:8px;}
+  .hero h1{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:8px;}
+  .hero h1 em{font-style:italic;font-weight:400;color:#5eead4;}
+  .hero p{font-size:13px;color:#94a3b8;line-height:1.6;}
+  .tab-nav-wrap{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+  .tab-nav{display:flex;overflow-x:auto;scrollbar-width:none;max-width:480px;margin:0 auto;}
+  .tab-nav::-webkit-scrollbar{display:none;}
+  .tab-btn{flex-shrink:0;padding:14px 16px;border:none;background:transparent;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:all 0.2s;white-space:nowrap;}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+  .content{max-width:480px;margin:0 auto;padding:20px 16px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+  .card-title{font-size:15px;font-weight:600;margin-bottom:4px;color:var(--text);display:flex;align-items:center;gap:8px;}
+  .card-subtitle{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:18px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:5px;}
+  .field input,.field select{width:100%;padding:11px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:'DM Mono',monospace;outline:none;transition:border-color 0.2s,box-shadow 0.2s;-webkit-appearance:none;appearance:none;}
+  .field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(13,148,136,0.12);}
+  .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .ftin-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+  .unit-toggle{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:16px;gap:2px;}
+  .unit-toggle button{flex:1;padding:8px 4px;border:none;border-radius:8px;background:transparent;color:var(--muted);font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.2s;white-space:nowrap;line-height:1.3;}
+  .unit-toggle button.active{background:#fff;color:var(--accent);box-shadow:0 1px 6px rgba(0,0,0,0.1);}
+  .btn{width:100%;padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.18s;}
+  .btn-primary{background:linear-gradient(135deg,#0d9488,#0891b2);color:#fff;box-shadow:0 4px 14px rgba(13,148,136,0.3);}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(13,148,136,0.4);}
+  .btn-primary:active{transform:scale(0.98);}
+  .btn-secondary{background:transparent;color:var(--muted);border:1.5px solid var(--border);margin-top:10px;}
+  .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+  .result-box{background:var(--alight);border:1.5px solid #99f6e4;border-radius:14px;padding:16px;margin-top:16px;animation:fadeUp 0.25s ease;}
+  .result-box.blue{background:#eff6ff;border-color:#93c5fd;}
+  .result-box.purple{background:#f5f3ff;border-color:#c4b5fd;}
+  .result-box.neutral{background:#f8fafc;border-color:var(--border);}
+  .result-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.05);}
+  .result-row:last-child{border-bottom:none;}
+  .result-label{font-size:12px;color:var(--muted);font-weight:500;max-width:50%;padding-top:2px;}
+  .result-right{text-align:right;}
+  .rv{font-family:'DM Mono',monospace;font-size:17px;font-weight:500;color:#0d9488;display:block;}
+  .rv.blue{color:#1d4ed8;} .rv.purple{color:#7c3aed;}
+  .rv-sub{display:block;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:1px;}
+  .ru{font-size:11px;color:var(--muted);margin-left:2px;}
+  .badge{display:inline-block;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600;font-family:'DM Mono',monospace;}
+  .bg-green{background:#dcfce7;color:#16a34a;} .bg-blue{background:#dbeafe;color:#1d4ed8;}
+  .bg-amber{background:#fef3c7;color:#b45309;} .bg-red{background:#fee2e2;color:#dc2626;}
+  .bg-purple{background:#f3e8ff;color:#7c3aed;}
+  .ref-table{width:100%;border-collapse:collapse;margin-top:6px;}
+  .ref-table th{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);text-align:left;padding:6px;border-bottom:1.5px solid var(--border);font-family:'DM Mono',monospace;}
+  .ref-table td{font-size:12px;padding:8px 6px;border-bottom:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;}
+  .ref-table tr:last-child td{border-bottom:none;}
+  .bmi-bar-wrap{margin:14px 0 8px;}
+  .bmi-track{height:10px;border-radius:5px;background:linear-gradient(to right,#3b82f6 0%,#22d3ee 22%,#4ade80 38%,#facc15 55%,#fb923c 72%,#ef4444 100%);position:relative;}
+  .bmi-needle{position:absolute;top:-5px;width:20px;height:20px;background:#fff;border:3px solid #1a2332;border-radius:50%;transform:translateX(-50%);transition:left 0.5s cubic-bezier(0.4,0,0.2,1);box-shadow:0 2px 6px rgba(0,0,0,0.2);}
+  .bmi-scale-labels{display:flex;justify-content:space-between;margin-top:8px;}
+  .bmi-scale-labels span{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;text-align:center;line-height:1.3;}
+  .info-note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:10px;font-style:italic;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--border);}
+  .dose-tbl{width:100%;border-collapse:collapse;}
+  .dose-tbl th{font-size:10px;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;text-align:left;padding:5px 6px;border-bottom:1.5px solid var(--border);}
+  .dose-tbl td{font-size:12px;font-family:'DM Mono',monospace;padding:9px 6px;border-bottom:1px solid var(--border);vertical-align:top;}
+  .dose-tbl tr:last-child td{border-bottom:none;}
+  .dh{color:#0d9488;font-weight:600;}
+  .hidden{display:none!important;} .section{display:none;} .section.active{display:block;}
+  .sep{height:1px;background:var(--border);margin:16px 0;}
+  .alert{border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.6;margin-top:12px;}
+  .a-amber{background:#fef3c7;border:1px solid #fcd34d;color:#92400e;}
+  .a-red{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;}
+  .a-green{background:#dcfce7;border:1px solid #86efac;color:#166534;}
+  .a-blue{background:#dbeafe;border:1px solid #93c5fd;color:#1e3a8a;}
+  .footer{text-align:center;padding:24px 16px 0;font-size:12px;color:var(--muted);line-height:1.7;}
+  .footer strong{color:var(--text);}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-inner">
+    <a class="back-btn" href="index.html">← Back to Suite</a>
+    <div class="hero-badge">PharmaTool Suite</div>
+    <h1>Body Weight,<br><em>BMI & Nutrition</em></h1>
+    <p>IBW · AdjBW · BMI · Dose Calculation · NRI · GNRI</p>
+  </div>
+</div>
+<div class="tab-nav-wrap">
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('weights',this)">⚖️ Body Weight</button>
+    <button class="tab-btn" onclick="showTab('bmi',this)">📊 BMI</button>
+    <button class="tab-btn" onclick="showTab('dose',this)">💊 Dose Calc</button>
+    <button class="tab-btn" onclick="showTab('nri',this)">🥗 NRI</button>
+    <button class="tab-btn" onclick="showTab('gnri',this)">👴 GNRI</button>
+  </div>
+</div>
+
+<!-- TAB 1: BODY WEIGHT -->
+<div id="tab-weights" class="section active"><div class="content">
+  <div class="card">
+    <div class="card-title">⚖️ Body Weight Calculator</div>
+    <div class="card-subtitle">Devine IBW · Adjusted Body Weight · Dosing Weight</div>
+    <div class="unit-toggle">
+      <button id="bw-u-metric" class="active" onclick="setBW('metric')">cm / kg</button>
+      <button id="bw-u-ftin" onclick="setBW('ftin')">ft+in / kg</button>
+      <button id="bw-u-imperial" onclick="setBW('imperial')">ft+in / lb</button>
+    </div>
+    <div class="field"><label>Biological Sex</label>
+      <select id="bw-sex"><option value="male">Male</option><option value="female">Female</option></select>
+    </div>
+    <div id="bw-h-cm"><div class="field"><label>Height (cm)</label><input type="number" id="bw-cm" placeholder="170" inputmode="decimal"></div></div>
+    <div id="bw-h-ft" class="hidden"><div class="ftin-row">
+      <div class="field" style="margin-bottom:0"><label>Feet</label><input type="number" id="bw-ft" placeholder="5" min="0" max="9" inputmode="numeric"></div>
+      <div class="field" style="margin-bottom:0"><label>Inches</label><input type="number" id="bw-in" placeholder="7" min="0" max="11" inputmode="decimal"></div>
+    </div></div>
+    <div class="field" style="margin-top:14px"><label id="lbl-bw-wt">Actual Weight (kg)</label><input type="number" id="bw-wt" placeholder="80" inputmode="decimal"></div>
+    <button class="btn btn-primary" onclick="calcBW()">Calculate Weights</button>
+    <button class="btn btn-secondary" onclick="clrBW()">Clear</button>
+  </div>
+  <div id="bw-res" class="hidden">
+    <div class="result-box">
+      <div class="result-row"><span class="result-label">Actual Body Weight (ABW)</span><span class="result-right"><span class="rv" id="r-abw">—</span><span class="rv-sub" id="r-abw-s"></span></span></div>
+      <div class="result-row"><span class="result-label">Ideal Body Weight (IBW)</span><span class="result-right"><span class="rv" id="r-ibw">—</span><span class="rv-sub" id="r-ibw-s"></span></span></div>
+      <div class="result-row"><span class="result-label">Adjusted Body Weight (AdjBW)</span><span class="result-right"><span class="rv" id="r-adj">—</span><span class="rv-sub" id="r-adj-s"></span></span></div>
+      <div class="result-row"><span class="result-label">% of IBW</span><span class="result-right"><span class="rv" id="r-pct">—</span><span class="ru">%</span></span></div>
+      <div class="result-row"><span class="result-label">Weight Status</span><span id="r-status">—</span></div>
+      <div class="result-row"><span class="result-label">BMI</span><span class="result-right"><span class="rv" id="r-bwbmi">—</span><span class="ru">kg/m²</span></span></div>
+    </div>
+    <div class="card" style="margin-top:16px;border-left:4px solid #0d9488">
+      <div class="card-title" style="font-size:13px">💊 Recommended Dosing Weight</div>
+      <div class="card-subtitle">Based on % IBW rule</div>
+      <div class="result-row" style="padding-top:0"><span class="result-label">Dosing Weight</span><span class="result-right"><span class="rv" id="r-dwt">—</span><span class="rv-sub" id="r-dwt-s"></span></span></div>
+      <div class="result-row"><span class="result-label">Weight Type Used</span><span id="r-dtype">—</span></div>
+      <div id="r-dreason" class="info-note" style="margin-top:8px"></div>
+    </div>
+    <div class="card neutral">
+      <div class="card-title" style="font-size:13px">📋 Reference Formulas</div>
+      <table class="ref-table">
+        <tr><th>Formula</th><th>Value</th></tr>
+        <tr><td>IBW Male (Devine)</td><td>50 + 2.3 × (in − 60)</td></tr>
+        <tr><td>IBW Female (Devine)</td><td>45.5 + 2.3 × (in − 60)</td></tr>
+        <tr><td>AdjBW</td><td>IBW + 0.4 × (ABW − IBW)</td></tr>
+        <tr><td>Obese threshold</td><td>ABW &gt; 130% of IBW</td></tr>
+      </table>
+    </div>
+    <div class="info-note"><strong>Dosing logic:</strong> ABW &lt; IBW → use ABW. 90–130% IBW → use IBW. &gt;130% IBW → use AdjBW. Always verify with drug-specific guidelines.</div>
+  </div>
+  <div class="footer"><strong>PharmaTool Suite</strong> · For clinical decision support only<br>Always verify with current guidelines and clinical judgment</div>
+</div></div>
+
+<!-- TAB 2: BMI -->
+<div id="tab-bmi" class="section"><div class="content">
+  <div class="card">
+    <div class="card-title">📊 BMI Calculator</div>
+    <div class="card-subtitle">Body Mass Index · WHO Classification</div>
+    <div class="unit-toggle">
+      <button id="bmi-u-metric" class="active" onclick="setBMI('metric')">cm / kg</button>
+      <button id="bmi-u-ftin" onclick="setBMI('ftin')">ft+in / kg</button>
+      <button id="bmi-u-imperial" onclick="setBMI('imperial')">ft+in / lb</button>
+    </div>
+    <div id="bmi-h-cm"><div class="field"><label>Height (cm)</label><input type="number" id="bmi-cm" placeholder="170" inputmode="decimal"></div></div>
+    <div id="bmi-h-ft" class="hidden"><div class="ftin-row">
+      <div class="field" style="margin-bottom:0"><label>Feet</label><input type="number" id="bmi-ft" placeholder="5" min="0" max="9" inputmode="numeric"></div>
+      <div class="field" style="margin-bottom:0"><label>Inches</label><input type="number" id="bmi-in" placeholder="7" min="0" max="11" inputmode="decimal"></div>
+    </div></div>
+    <div class="field" style="margin-top:14px"><label id="lbl-bmi-wt">Weight (kg)</label><input type="number" id="bmi-wt" placeholder="80" inputmode="decimal"></div>
+    <div class="field"><label>Age (optional)</label><input type="number" id="bmi-age" placeholder="45" inputmode="numeric"></div>
+    <button class="btn btn-primary" onclick="calcBMI()">Calculate BMI</button>
+    <button class="btn btn-secondary" onclick="clrBMI()">Clear</button>
+  </div>
+  <div id="bmi-res" class="hidden">
+    <div class="result-box blue">
+      <div class="result-row"><span class="result-label">BMI</span><span class="result-right"><span class="rv blue" id="r-bmi">—</span><span class="ru">kg/m²</span></span></div>
+      <div class="result-row"><span class="result-label">Classification</span><span id="r-bmiclass">—</span></div>
+      <div class="result-row"><span class="result-label">Healthy Weight Range</span><span class="result-right"><span class="rv blue" id="r-healthy">—</span><span class="rv-sub" id="r-healthy-s"></span></span></div>
+      <div class="result-row"><span class="result-label">Weight to Lose / Gain</span><span class="result-right"><span class="rv blue" id="r-diff">—</span></span></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-title" style="font-size:13px">BMI Scale</div>
+      <div class="bmi-bar-wrap">
+        <div class="bmi-track"><div class="bmi-needle" id="bmi-needle" style="left:0%"></div></div>
+        <div class="bmi-scale-labels">
+          <span>Under-<br>weight<br>&lt;18.5</span><span>Normal<br>18.5–<br>24.9</span>
+          <span>Over-<br>weight<br>25–30</span><span>Obese<br>I<br>30–35</span>
+          <span>II<br>35–40</span><span>III<br>&gt;40</span>
+        </div>
+      </div>
+    </div>
+    <div class="card neutral">
+      <div class="card-title" style="font-size:13px">📋 WHO Classification</div>
+      <table class="ref-table">
+        <tr><th>BMI (kg/m²)</th><th>Category</th><th>Risk</th></tr>
+        <tr><td>&lt; 16.0</td><td>Severe Thinness</td><td style="color:#dc2626">Very High</td></tr>
+        <tr><td>16.0–16.9</td><td>Moderate Thinness</td><td style="color:#dc2626">High</td></tr>
+        <tr><td>17.0–18.4</td><td>Mild Thinness</td><td style="color:#b45309">Moderate</td></tr>
+        <tr><td>18.5–24.9</td><td>Normal</td><td style="color:#16a34a">Low</td></tr>
+        <tr><td>25.0–29.9</td><td>Overweight</td><td style="color:#b45309">Moderate</td></tr>
+        <tr><td>30.0–34.9</td><td>Obese Class I</td><td style="color:#dc2626">High</td></tr>
+        <tr><td>35.0–39.9</td><td>Obese Class II</td><td style="color:#dc2626">Very High</td></tr>
+        <tr><td>≥ 40.0</td><td>Obese Class III</td><td style="color:#7c3aed">Extremely High</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="footer"><strong>PharmaTool Suite</strong> · For clinical decision support only<br>Always verify with current guidelines and clinical judgment</div>
+</div></div>
+
+<!-- TAB 3: DOSE -->
+<div id="tab-dose" class="section"><div class="content">
+  <div class="card">
+    <div class="card-title">💊 Weight-Based Dose Calculator</div>
+    <div class="card-subtitle">ABW · IBW · AdjBW Dosing Comparison</div>
+    <div class="info-note" style="margin-bottom:16px">Tip: Calculate body weights in the ⚖️ tab first, then enter values here.</div>
+    <div class="unit-toggle">
+      <button id="dose-u-kg" class="active" onclick="setDose('kg')">Enter weights in kg</button>
+      <button id="dose-u-lb" onclick="setDose('lb')">Enter weights in lb</button>
+    </div>
+    <div class="row-3">
+      <div class="field"><label id="lbl-dabw">ABW (kg)</label><input type="number" id="d-abw" placeholder="80" inputmode="decimal"></div>
+      <div class="field"><label id="lbl-dibw">IBW (kg)</label><input type="number" id="d-ibw" placeholder="70" inputmode="decimal"></div>
+      <div class="field"><label id="lbl-dadj">AdjBW (kg)</label><input type="number" id="d-adj" placeholder="74" inputmode="decimal"></div>
+    </div>
+    <div class="sep"></div>
+    <div class="row-2">
+      <div class="field"><label>Dose per kg</label><input type="number" id="d-dose" placeholder="15" inputmode="decimal"></div>
+      <div class="field"><label>Unit</label>
+        <select id="d-unit"><option>mg/kg</option><option>mcg/kg</option><option>units/kg</option><option>mEq/kg</option><option>mL/kg</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Frequency (doses/day)</label><input type="number" id="d-freq" placeholder="1" value="1" min="1" max="24" inputmode="numeric"></div>
+    <div class="row-2">
+      <div class="field"><label>Min Total Dose (cap)</label><input type="number" id="d-min" placeholder="optional" inputmode="decimal"></div>
+      <div class="field"><label>Max Total Dose (cap)</label><input type="number" id="d-max" placeholder="optional" inputmode="decimal"></div>
+    </div>
+    <button class="btn btn-primary" onclick="calcDose()">Calculate Doses</button>
+    <button class="btn btn-secondary" onclick="clrDose()">Clear</button>
+  </div>
+  <div id="dose-res" class="hidden">
+    <div class="result-box blue">
+      <div class="card-subtitle" style="color:#1d4ed8;margin-bottom:12px">Dose per administration</div>
+      <table class="dose-tbl">
+        <tr><th>Basis</th><th>Weight (kg)</th><th>Single Dose</th><th>Daily Dose</th></tr>
+        <tr><td>ABW</td><td id="dt-awt">—</td><td id="dt-as" class="dh">—</td><td id="dt-ad">—</td></tr>
+        <tr><td>IBW</td><td id="dt-iwt">—</td><td id="dt-is" class="dh">—</td><td id="dt-id">—</td></tr>
+        <tr><td>AdjBW</td><td id="dt-jwt">—</td><td id="dt-js" class="dh">—</td><td id="dt-jd">—</td></tr>
+      </table>
+    </div>
+    <div id="dose-cap" class="alert a-amber hidden">⚠️ <strong>Dose cap applied.</strong> <span id="dose-cap-msg"></span></div>
+    <div class="info-note">All lb inputs converted to kg internally. Daily dose = single dose × frequency.</div>
+  </div>
+  <div class="footer"><strong>PharmaTool Suite</strong> · For clinical decision support only<br>Always verify with current guidelines and clinical judgment</div>
+</div></div>
+
+<!-- TAB 4: NRI -->
+<div id="tab-nri" class="section"><div class="content">
+  <div class="card">
+    <div class="card-title">🥗 Nutritional Risk Index (NRI)</div>
+    <div class="card-subtitle">Buzby Formula · Surgical / Hospitalized Patients</div>
+    <div class="unit-toggle">
+      <button id="nri-u-kg" class="active" onclick="setNRI('kg')">Weights in kg</button>
+      <button id="nri-u-lb" onclick="setNRI('lb')">Weights in lb</button>
+    </div>
+    <div class="field"><label>Serum Albumin (g/dL)</label><input type="number" id="nri-alb" placeholder="3.5" step="0.1" inputmode="decimal"></div>
+    <div class="row-2">
+      <div class="field"><label id="lbl-ncur">Current Weight (kg)</label><input type="number" id="nri-cur" placeholder="68" inputmode="decimal"></div>
+      <div class="field"><label id="lbl-nusu">Usual Weight (kg)</label><input type="number" id="nri-usu" placeholder="75" inputmode="decimal"></div>
+    </div>
+    <button class="btn btn-primary" onclick="calcNRI()">Calculate NRI</button>
+    <button class="btn btn-secondary" onclick="clrNRI()">Clear</button>
+  </div>
+  <div id="nri-res" class="hidden">
+    <div class="result-box">
+      <div class="result-row"><span class="result-label">NRI Score</span><span class="result-right"><span class="rv" id="r-nri">—</span></span></div>
+      <div class="result-row"><span class="result-label">Nutritional Status</span><span id="r-nri-st">—</span></div>
+      <div class="result-row"><span class="result-label">% Usual Body Weight</span><span class="result-right"><span class="rv" id="r-nri-pct">—</span><span class="ru">%</span></span></div>
+      <div class="result-row"><span class="result-label">Weight Loss</span><span class="result-right"><span class="rv" id="r-nri-loss">—</span><span class="rv-sub" id="r-nri-loss-s"></span></span></div>
+    </div>
+    <div id="nri-alert" class="alert hidden"></div>
+    <div class="card neutral" style="margin-top:14px">
+      <div class="card-title" style="font-size:13px">📋 NRI Classification (Buzby)</div>
+      <table class="ref-table">
+        <tr><th>NRI Score</th><th>Status</th><th>Action</th></tr>
+        <tr><td>&gt; 100</td><td style="color:#16a34a">Not malnourished</td><td>Routine monitoring</td></tr>
+        <tr><td>97.5–100</td><td style="color:#1d4ed8">Mild malnutrition</td><td>Nutritional support</td></tr>
+        <tr><td>83.5–97.5</td><td style="color:#b45309">Moderate malnutrition</td><td>Intensive support</td></tr>
+        <tr><td>&lt; 83.5</td><td style="color:#dc2626">Severe malnutrition</td><td>Urgent intervention</td></tr>
+      </table>
+    </div>
+    <div class="info-note">NRI = (1.519 × Albumin g/dL) + (41.7 × Current Wt / Usual Wt). Calculated in kg internally.</div>
+  </div>
+  <div class="footer"><strong>PharmaTool Suite</strong> · For clinical decision support only<br>Always verify with current guidelines and clinical judgment</div>
+</div></div>
+
+<!-- TAB 5: GNRI -->
+<div id="tab-gnri" class="section"><div class="content">
+  <div class="card">
+    <div class="card-title">👴 Geriatric NRI (GNRI)</div>
+    <div class="card-subtitle">Bouillanne Formula · Patients ≥ 65 years</div>
+    <div class="unit-toggle">
+      <button id="gnri-u-metric" class="active" onclick="setGNRI('metric')">cm / kg</button>
+      <button id="gnri-u-ftin" onclick="setGNRI('ftin')">ft+in / kg</button>
+      <button id="gnri-u-imperial" onclick="setGNRI('imperial')">ft+in / lb</button>
+    </div>
+    <div class="field"><label>Serum Albumin (g/dL)</label><input type="number" id="gnri-alb" placeholder="3.5" step="0.1" inputmode="decimal"></div>
+    <div class="field"><label id="lbl-gnri-wt">Current Weight (kg)</label><input type="number" id="gnri-wt" placeholder="60" inputmode="decimal"></div>
+    <div id="gnri-h-cm"><div class="field"><label>Height (cm)</label><input type="number" id="gnri-cm" placeholder="165" inputmode="decimal"></div></div>
+    <div id="gnri-h-ft" class="hidden"><div class="ftin-row">
+      <div class="field" style="margin-bottom:0"><label>Feet</label><input type="number" id="gnri-ft" placeholder="5" min="0" max="9" inputmode="numeric"></div>
+      <div class="field" style="margin-bottom:0"><label>Inches</label><input type="number" id="gnri-in" placeholder="5" min="0" max="11" inputmode="decimal"></div>
+    </div></div>
+    <div class="field" style="margin-top:14px"><label>Biological Sex</label>
+      <select id="gnri-sex"><option value="male">Male</option><option value="female">Female</option></select>
+    </div>
+    <button class="btn btn-primary" onclick="calcGNRI()">Calculate GNRI</button>
+    <button class="btn btn-secondary" onclick="clrGNRI()">Clear</button>
+  </div>
+  <div id="gnri-res" class="hidden">
+    <div class="result-box purple">
+      <div class="result-row"><span class="result-label">GNRI Score</span><span class="result-right"><span class="rv purple" id="r-gnri">—</span></span></div>
+      <div class="result-row"><span class="result-label">IBW Used (Devine)</span><span class="result-right"><span class="rv purple" id="r-gnri-ibw">—</span><span class="rv-sub" id="r-gnri-ibw-s"></span></span></div>
+      <div class="result-row"><span class="result-label">Weight / IBW Ratio</span><span class="result-right"><span class="rv purple" id="r-gnri-ratio">—</span></span></div>
+      <div class="result-row"><span class="result-label">Risk Category</span><span id="r-gnri-st">—</span></div>
+    </div>
+    <div id="gnri-alert" class="alert hidden" style="margin-top:12px"></div>
+    <div class="card neutral" style="margin-top:14px">
+      <div class="card-title" style="font-size:13px">📋 GNRI Classification</div>
+      <table class="ref-table">
+        <tr><th>GNRI Score</th><th>Risk</th><th>Mortality</th></tr>
+        <tr><td>&lt; 82</td><td style="color:#dc2626">Major</td><td style="color:#dc2626">High</td></tr>
+        <tr><td>82–91</td><td style="color:#b45309">Moderate</td><td style="color:#b45309">Moderate</td></tr>
+        <tr><td>92–98</td><td style="color:#1d4ed8">Low</td><td style="color:#1d4ed8">Low</td></tr>
+        <tr><td>&gt; 98</td><td style="color:#16a34a">No Risk</td><td style="color:#16a34a">Very Low</td></tr>
+      </table>
+    </div>
+    <div class="info-note">GNRI = [14.89 × Albumin (g/dL)] + [41.7 × (Weight / IBW)]. Ratio capped at 1 when current wt &gt; IBW. IBW from Devine formula.</div>
+  </div>
+  <div class="footer"><strong>PharmaTool Suite</strong> · For clinical decision support only<br>Always verify with current guidelines and clinical judgment</div>
+</div></div>
+
+<script>
+// ── State ────────────────────────────────────────────────
+const U={bw:'metric',bmi:'metric',dose:'kg',nri:'kg',gnri:'metric'};
+
+// ── Helpers ──────────────────────────────────────────────
+const rnd=(n,d=1)=>Math.round(n*10**d)/10**d;
+const bdg=(t,c)=>`<span class="badge bg-${c}">${t}</span>`;
+const toLb=kg=>kg*2.20462, toKg=lb=>lb*0.453592;
+
+function showTab(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+function setAct(ids,aid){ids.forEach(id=>{const e=document.getElementById(id);if(e)e.classList.toggle('active',id===aid);});}
+
+function htSwitch(pfx,mode){
+  const cm=document.getElementById(pfx+'-h-cm'), ft=document.getElementById(pfx+'-h-ft');
+  if(!cm||!ft)return;
+  cm.classList.toggle('hidden',mode!=='metric');
+  ft.classList.toggle('hidden',mode==='metric');
+}
+
+function rdHt(pfx,mode){
+  if(mode==='metric'){
+    return parseFloat(document.getElementById(pfx+'-cm').value);
+  }
+  const ft=parseFloat(document.getElementById(pfx+'-ft').value)||0;
+  const inc=parseFloat(document.getElementById(pfx+'-in').value)||0;
+  return(ft*12+inc)*2.54;
+}
+
+function fmtWt(kg,showLb){
+  return{
+    main: rnd(kg,1)+' kg',
+    sub: showLb?'≈ '+rnd(toLb(kg),1)+' lb':''
+  };
+}
+
+// ── Unit setters ─────────────────────────────────────────
+function setBW(m){
+  U.bw=m; setAct(['bw-u-metric','bw-u-ftin','bw-u-imperial'],'bw-u-'+m); htSwitch('bw',m);
+  const lb=m==='imperial';
+  document.getElementById('lbl-bw-wt').textContent=lb?'Actual Weight (lb)':'Actual Weight (kg)';
+  document.getElementById('bw-wt').placeholder=lb?'176':'80';
+  document.getElementById('bw-res').classList.add('hidden');
+}
+
+function setBMI(m){
+  U.bmi=m; setAct(['bmi-u-metric','bmi-u-ftin','bmi-u-imperial'],'bmi-u-'+m); htSwitch('bmi',m);
+  const lb=m==='imperial';
+  document.getElementById('lbl-bmi-wt').textContent=lb?'Weight (lb)':'Weight (kg)';
+  document.getElementById('bmi-wt').placeholder=lb?'176':'80';
+  document.getElementById('bmi-res').classList.add('hidden');
+}
+
+function setDose(m){
+  U.dose=m; setAct(['dose-u-kg','dose-u-lb'],'dose-u-'+m);
+  const u=m==='lb'?'lb':'kg';
+  document.getElementById('lbl-dabw').textContent='ABW ('+u+')';
+  document.getElementById('lbl-dibw').textContent='IBW ('+u+')';
+  document.getElementById('lbl-dadj').textContent='AdjBW ('+u+')';
+  const ph=m==='lb'?['176','154','163']:['80','70','74'];
+  ['d-abw','d-ibw','d-adj'].forEach((id,i)=>document.getElementById(id).placeholder=ph[i]);
+  document.getElementById('dose-res').classList.add('hidden');
+}
+
+function setNRI(m){
+  U.nri=m; setAct(['nri-u-kg','nri-u-lb'],'nri-u-'+m);
+  const u=m==='lb'?'lb':'kg';
+  document.getElementById('lbl-ncur').textContent='Current Weight ('+u+')';
+  document.getElementById('lbl-nusu').textContent='Usual Weight ('+u+')';
+  document.getElementById('nri-cur').placeholder=m==='lb'?'150':'68';
+  document.getElementById('nri-usu').placeholder=m==='lb'?'165':'75';
+  document.getElementById('nri-res').classList.add('hidden');
+}
+
+function setGNRI(m){
+  U.gnri=m; setAct(['gnri-u-metric','gnri-u-ftin','gnri-u-imperial'],'gnri-u-'+m); htSwitch('gnri',m);
+  const lb=m==='imperial';
+  document.getElementById('lbl-gnri-wt').textContent=lb?'Current Weight (lb)':'Current Weight (kg)';
+  document.getElementById('gnri-wt').placeholder=lb?'132':'60';
+  document.getElementById('gnri-res').classList.add('hidden');
+}
+
+// ── Body Weight ──────────────────────────────────────────
+function calcBW(){
+  const m=U.bw, sex=document.getElementById('bw-sex').value;
+  const hcm=rdHt('bw',m);
+  const wr=parseFloat(document.getElementById('bw-wt').value);
+  const wkg=m==='imperial'?toKg(wr):wr;
+  if(!hcm||!wkg||hcm<=0||wkg<=0){alert('Please enter valid height and weight.');return;}
+  const abw=wkg, hIn=hcm/2.54, o60=hIn-60;
+  const ibw=sex==='male'?Math.max(50+2.3*o60,0):Math.max(45.5+2.3*o60,0);
+  const adj=ibw+0.4*(abw-ibw);
+  const pct=(abw/ibw)*100, bmi=abw/((hcm/100)**2), lb=m==='imperial';
+  let st,dwt,dtyp,dreason;
+  if(abw<ibw){st=bdg('Underweight (ABW < IBW)','blue');dwt=abw;dtyp=bdg('ABW','blue');dreason='Patient is underweight (ABW < IBW). Use Actual Body Weight to avoid underdosing.';}
+  else if(pct<=130){st=bdg('Normal / Overweight','green');dwt=ibw;dtyp=bdg('IBW','green');dreason='ABW is within 130% of IBW. Many drugs are dosed on IBW; verify with drug-specific guidance.';}
+  else{st=bdg('Obese (ABW > 130% IBW)','amber');dwt=adj;dtyp=bdg('AdjBW','amber');dreason='Patient is obese (ABW > 130% IBW). AdjBW recommended for most renally-cleared drugs. Always verify.';}
+  function s(id,sid,kg){const f=fmtWt(kg,lb);document.getElementById(id).textContent=f.main;document.getElementById(sid).textContent=f.sub;}
+  s('r-abw','r-abw-s',abw); s('r-ibw','r-ibw-s',ibw); s('r-adj','r-adj-s',adj); s('r-dwt','r-dwt-s',dwt);
+  document.getElementById('r-pct').textContent=rnd(pct,1);
+  document.getElementById('r-status').innerHTML=st;
+  document.getElementById('r-bwbmi').textContent=rnd(bmi,1);
+  document.getElementById('r-dtype').innerHTML=dtyp;
+  document.getElementById('r-dreason').textContent=dreason;
+  document.getElementById('bw-res').classList.remove('hidden');
+}
+function clrBW(){['bw-cm','bw-ft','bw-in','bw-wt'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('bw-res').classList.add('hidden');}
+
+// ── BMI ──────────────────────────────────────────────────
+function calcBMI(){
+  const m=U.bmi;
+  const hcm=rdHt('bmi',m);
+  const wr=parseFloat(document.getElementById('bmi-wt').value);
+  const wkg=m==='imperial'?toKg(wr):wr;
+  const lb=m==='imperial';
+  if(!hcm||!wkg||hcm<=0||wkg<=0){alert('Please enter valid height and weight.');return;}
+  const hm=hcm/100, bmi=wkg/(hm*hm), minK=18.5*hm*hm, maxK=24.9*hm*hm;
+  let ct,bc;
+  if(bmi<16){ct='Severe Thinness';bc='red';}
+  else if(bmi<17){ct='Moderate Thinness';bc='red';}
+  else if(bmi<18.5){ct='Mild Thinness';bc='amber';}
+  else if(bmi<25){ct='Normal';bc='green';}
+  else if(bmi<30){ct='Overweight (Pre-obese)';bc='amber';}
+  else if(bmi<35){ct='Obese Class I';bc='red';}
+  else if(bmi<40){ct='Obese Class II';bc='red';}
+  else{ct='Obese Class III (Morbid)';bc='purple';}
+  const hMain=lb?`${rnd(toLb(minK),1)} – ${rnd(toLb(maxK),1)} lb`:`${rnd(minK,1)} – ${rnd(maxK,1)} kg`;
+  const hAlt=lb?`(${rnd(minK,1)} – ${rnd(maxK,1)} kg)`:'';
+  let diff;
+  if(bmi<18.5){const g=lb?rnd(toLb(minK-wkg),1)+' lb':rnd(minK-wkg,1)+' kg';diff='Gain '+g+' to reach healthy range';}
+  else if(bmi<25){diff='Within healthy range ✓';}
+  else{const l=lb?rnd(toLb(wkg-maxK),1)+' lb':rnd(wkg-maxK,1)+' kg';diff='Lose '+l+' to reach healthy range';}
+  document.getElementById('r-bmi').textContent=rnd(bmi,1);
+  document.getElementById('r-bmiclass').innerHTML=bdg(ct,bc);
+  document.getElementById('r-healthy').textContent=hMain;
+  document.getElementById('r-healthy-s').textContent=hAlt;
+  document.getElementById('r-diff').textContent=diff;
+  document.getElementById('bmi-res').classList.remove('hidden');
+  const pct=Math.min(Math.max((bmi-15)/30*100,0),100);
+  document.getElementById('bmi-needle').style.left=pct+'%';
+}
+function clrBMI(){['bmi-cm','bmi-ft','bmi-in','bmi-wt','bmi-age'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('bmi-res').classList.add('hidden');}
+
+// ── Dose ─────────────────────────────────────────────────
+function calcDose(){
+  const m=U.dose, cv=v=>m==='lb'?toKg(v):v;
+  const ar=parseFloat(document.getElementById('d-abw').value);
+  const ir=parseFloat(document.getElementById('d-ibw').value);
+  const jr=parseFloat(document.getElementById('d-adj').value);
+  const dose=parseFloat(document.getElementById('d-dose').value);
+  const unit=document.getElementById('d-unit').value;
+  const freq=parseFloat(document.getElementById('d-freq').value)||1;
+  const mn=parseFloat(document.getElementById('d-min').value);
+  const mx=parseFloat(document.getElementById('d-max').value);
+  if(!dose||dose<=0){alert('Please enter a dose per kg.');return;}
+  const bu=unit.replace('/kg',''); let cap=false;
+  function cm(raw){
+    if(isNaN(raw)||raw<=0)return{wt:'—',s:'—',d:'—'};
+    const kg=cv(raw); let d=kg*dose;
+    if(!isNaN(mn)&&d<mn){d=mn;cap=true;} if(!isNaN(mx)&&d>mx){d=mx;cap=true;}
+    const wtTxt=m==='lb'?`${rnd(raw,1)} lb (${rnd(kg,1)} kg)`:`${rnd(kg,1)} kg`;
+    return{wt:wtTxt, s:rnd(d,1)+' '+bu, d:rnd(d*freq,1)+' '+bu+'/day'};
+  }
+  const a=cm(ar),i=cm(ir),j=cm(jr);
+  [['a',a],['i',i],['j',j]].forEach(([k,v])=>{
+    document.getElementById('dt-'+k+'wt').textContent=v.wt;
+    document.getElementById('dt-'+k+'s').textContent=v.s;
+    document.getElementById('dt-'+k+'d').textContent=v.d;
+  });
+  const ce=document.getElementById('dose-cap');
+  if(cap){let msg='';if(!isNaN(mn))msg+='Min: '+mn+' '+bu+'. ';if(!isNaN(mx))msg+='Max: '+mx+' '+bu+'.';document.getElementById('dose-cap-msg').textContent=msg;ce.classList.remove('hidden');}
+  else ce.classList.add('hidden');
+  document.getElementById('dose-res').classList.remove('hidden');
+}
+function clrDose(){['d-abw','d-ibw','d-adj','d-dose','d-min','d-max'].forEach(id=>document.getElementById(id).value='');document.getElementById('d-freq').value='1';document.getElementById('dose-res').classList.add('hidden');document.getElementById('dose-cap').classList.add('hidden');}
+
+// ── NRI ──────────────────────────────────────────────────
+function calcNRI(){
+  const m=U.nri, lb=m==='lb', cv=v=>lb?toKg(v):v;
+  const alb=parseFloat(document.getElementById('nri-alb').value);
+  const cr=parseFloat(document.getElementById('nri-cur').value);
+  const ur=parseFloat(document.getElementById('nri-usu').value);
+  if(!alb||!cr||!ur||alb<=0||cr<=0||ur<=0){alert('Please fill all fields.');return;}
+  const ck=cv(cr), uk=cv(ur);
+  const nri=(1.519*alb)+(41.7*(ck/uk)), pct=(ck/uk)*100, lossK=uk-ck;
+  let sb,ac,am;
+  if(nri>100){sb=bdg('Not Malnourished','green');ac='a-green';am='✓ Patient is not malnourished. Continue routine nutritional monitoring.';}
+  else if(nri>=97.5){sb=bdg('Mild Malnutrition','blue');ac='a-blue';am='ℹ Mild malnutrition detected. Consider nutritional support and dietary counseling.';}
+  else if(nri>=83.5){sb=bdg('Moderate Malnutrition','amber');ac='a-amber';am='⚠️ Moderate malnutrition. Initiate intensive nutritional support. Consider dietitian referral.';}
+  else{sb=bdg('Severe Malnutrition','red');ac='a-red';am='🚨 Severe malnutrition. Urgent nutritional intervention required. Consider enteral/parenteral nutrition.';}
+  const lossMain=lossK>0?(lb?rnd(toLb(lossK),1)+' lb':rnd(lossK,1)+' kg'):'0';
+  const lossSub=lossK>0&&lb?rnd(lossK,1)+' kg':'';
+  document.getElementById('r-nri').textContent=rnd(nri,1);
+  document.getElementById('r-nri-st').innerHTML=sb;
+  document.getElementById('r-nri-pct').textContent=rnd(pct,1);
+  document.getElementById('r-nri-loss').textContent=lossMain;
+  document.getElementById('r-nri-loss-s').textContent=lossSub;
+  const ae=document.getElementById('nri-alert');ae.className='alert '+ac;ae.textContent=am;ae.classList.remove('hidden');
+  document.getElementById('nri-res').classList.remove('hidden');
+}
+function clrNRI(){['nri-alb','nri-cur','nri-usu'].forEach(id=>document.getElementById(id).value='');document.getElementById('nri-res').classList.add('hidden');}
+
+// ── GNRI ─────────────────────────────────────────────────
+function calcGNRI(){
+  const m=U.gnri, lb=m==='imperial';
+  const alb=parseFloat(document.getElementById('gnri-alb').value);
+  const wr=parseFloat(document.getElementById('gnri-wt').value);
+  const wkg=lb?toKg(wr):wr;
+  const sex=document.getElementById('gnri-sex').value;
+  const hcm=rdHt('gnri',m);
+  if(!alb||!wkg||!hcm||alb<=0||wkg<=0||hcm<=0){alert('Please fill all fields.');return;}
+  const hIn=hcm/2.54, o60=hIn-60;
+  const ibw=sex==='male'?Math.max(50+2.3*o60,0):Math.max(45.5+2.3*o60,0);
+  const ratio=Math.min(wkg/ibw,1), gnri=(14.89*alb)+(41.7*ratio);
+  let sb,ac,am;
+  if(gnri>98){sb=bdg('No Risk','green');ac='a-green';am='✓ No nutritional risk detected. Routine monitoring recommended.';}
+  else if(gnri>=92){sb=bdg('Low Risk','blue');ac='a-blue';am='ℹ Low nutritional risk. Monitor regularly and optimize oral intake.';}
+  else if(gnri>=82){sb=bdg('Moderate Risk','amber');ac='a-amber';am='⚠️ Moderate nutritional risk. Nutritional intervention and close monitoring advised.';}
+  else{sb=bdg('Major Risk','red');ac='a-red';am='🚨 Major nutritional risk. Urgent intervention required. Mortality risk is elevated.';}
+  const ibwMain=lb?rnd(toLb(ibw),1)+' lb':rnd(ibw,1)+' kg';
+  const ibwSub=lb?rnd(ibw,1)+' kg':'';
+  document.getElementById('r-gnri').textContent=rnd(gnri,1);
+  document.getElementById('r-gnri-ibw').textContent=ibwMain;
+  document.getElementById('r-gnri-ibw-s').textContent=ibwSub;
+  document.getElementById('r-gnri-ratio').textContent=rnd(ratio*100,1)+'%';
+  document.getElementById('r-gnri-st').innerHTML=sb;
+  const ae=document.getElementById('gnri-alert');ae.className='alert '+ac;ae.textContent=am;ae.classList.remove('hidden');
+  document.getElementById('gnri-res').classList.remove('hidden');
+}
+function clrGNRI(){['gnri-alb','gnri-wt','gnri-cm','gnri-ft','gnri-in'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('gnri-res').classList.add('hidden');}
+</script>
+</body>
+</html>
