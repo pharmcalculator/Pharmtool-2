@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Pediatric CrCl — PharmaTool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Lora:ital,wght@0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f7f4;
+    --surface: #ffffff;
+    --surface2: #dcfce7;
+    --border: #d1e9dc;
+    --accent: #16a34a;
+    --accent2: #059669;
+    --warn: #ea580c;
+    --danger: #dc2626;
+    --text: #1a2e22;
+    --muted: #52786a;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 60px;
+  }
+
+  /* Back nav */
+  .back-nav {
+    width: 100%;
+    max-width: 480px;
+    padding: 12px 16px 0;
+  }
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    cursor: pointer;
+    padding: 6px 0;
+  }
+  .back-btn:hover { color: var(--accent); }
+
+  header {
+    width: 100%;
+    background: linear-gradient(135deg, #064e3b, #065f46, #059669);
+    padding: 24px 24px 20px;
+    text-align: center;
+    border-bottom: 1px solid #05966944;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -40px; left: 50%; transform: translateX(-50%);
+    width: 300px; height: 120px;
+    background: radial-gradient(ellipse, #ffffff18 0%, transparent 70%);
+  }
+  .logo-mark {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #6ee7b7;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: 0.9;
+  }
+  header h1 {
+    font-family: 'Lora', serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+  }
+  header h1 span { color: #6ee7b7; font-style: italic; }
+  header p {
+    font-size: 12px;
+    color: #a7f3d0;
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .tab-bar {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  .tab {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .container { width: 100%; max-width: 480px; padding: 20px 16px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .formula-badge {
+    background: var(--surface2);
+    border: 1px solid #bbf7d0;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+  .formula-badge .formula-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .formula-badge .hl { color: var(--accent2); font-weight: 500; }
+
+  /* K constant table */
+  .k-table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .k-table-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-family: 'DM Mono', monospace;
+  }
+  .k-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .k-table th {
+    text-align: left;
+    color: var(--muted);
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .k-table td { padding: 7px 0; border-bottom: 1px solid #f0f7f4; font-size: 12.5px; }
+  .k-table td:first-child { color: var(--accent2); font-family: 'DM Mono', monospace; width: 50px; }
+  .k-table tr.active-k td { background: #f0fdf4; font-weight: 600; }
+  .k-table tr:last-child td { border-bottom: none; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .card-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 14px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .field label span { color: var(--text); font-weight: 500; }
+  .input-row { display: flex; gap: 8px; align-items: center; }
+  .input-row input {
+    flex: 1;
+    background: #f8fffe;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 17px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .input-row input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px #16a34a20;
+  }
+  .unit-tag {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    min-width: 36px;
+  }
+
+  /* Sex toggle */
+  .sex-toggle { display: flex; gap: 8px; }
+  .sex-btn {
+    flex: 1; padding: 11px; border-radius: 8px;
+    border: 1px solid var(--border); background: #f8fffe;
+    color: var(--muted); font-size: 14px; font-weight: 500;
+    cursor: pointer; text-align: center; transition: all 0.18s; user-select: none;
+  }
+  .sex-btn.active { border-color: var(--accent); background: #dcfce7; color: var(--accent); }
+
+  /* Age group display */
+  .age-group-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fffe;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 10px;
+  }
+  .age-group-label { font-size: 13px; color: var(--muted); }
+  .age-group-val { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent); font-weight: 500; }
+  .k-val-display { font-family: 'DM Mono', monospace; font-size: 18px; color: var(--accent2); }
+
+  .calc-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #059669, #16a34a);
+    border: none;
+    border-radius: var(--radius);
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: opacity 0.2s, transform 0.1s;
+    box-shadow: 0 4px 12px rgba(5,150,105,0.3);
+  }
+  .calc-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    margin-top: 16px;
+    display: none;
+    animation: fadeUp 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .result-card.show { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 10px; font-family: 'DM Mono', monospace; }
+  .result-value { font-family: 'DM Mono', monospace; font-size: 52px; font-weight: 500; line-height: 1; }
+  .result-unit { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--muted); margin: 6px 0 4px; }
+  .result-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+
+  .stage-bar { display: flex; gap: 4px; margin: 14px 0 10px; }
+  .stage-seg { flex: 1; height: 6px; border-radius: 99px; background: var(--border); transition: background 0.4s; }
+
+  .stage-label {
+    font-size: 13px; font-weight: 600;
+    padding: 8px 14px; border-radius: 8px;
+    display: inline-block; margin-bottom: 10px;
+  }
+
+  .interp {
+    font-size: 12.5px; color: var(--muted); line-height: 1.6;
+    border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;
+  }
+  .interp strong { color: var(--text); }
+
+  /* Reference info styles */
+  .info-block { margin-bottom: 20px; }
+  .info-block h3 { font-family: 'Lora', serif; font-size: 17px; font-weight: 600; margin-bottom: 10px; color: var(--text); }
+  .info-block p { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 8px; }
+  .info-block ul { padding-left: 18px; }
+  .info-block ul li { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 4px; }
+  .info-block .mono {
+    font-family: 'DM Mono', monospace; font-size: 12.5px;
+    background: var(--surface2); padding: 10px 14px; border-radius: 8px;
+    line-height: 1.9; color: var(--accent2); border: 1px solid #bbf7d0;
+  }
+
+  .ref-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  .ref-table th { text-align: left; color: var(--muted); font-weight: 500; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  .ref-table td { padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .ref-table td:first-child { color: var(--accent2); font-family: 'DM Mono', monospace; font-size: 12px; width: 60px; }
+  .ref-table tr:last-child td { border-bottom: none; }
+
+  .disclaimer {
+    background: #fff7ed; border: 1px solid #fed7aa;
+    border-radius: var(--radius); padding: 12px 14px;
+    font-size: 11.5px; color: var(--warn); line-height: 1.6; margin-top: 8px;
+  }
+
+  .reset-btn {
+    display: block; text-align: center; font-size: 13px;
+    color: var(--muted); cursor: pointer; margin-top: 10px;
+    padding: 8px; text-decoration: underline; text-underline-offset: 3px;
+  }
+
+  .error-msg { font-size: 12px; color: var(--danger); margin-top: 6px; display: none; }
+  .error-msg.show { display: block; }
+</style>
+</head>
+<body>
+
+<div style="width:100%;max-width:480px;padding:12px 16px 0;margin:0 auto">
+  <a class="back-btn" href="pharmatool-home.html">← Back to PharmaTool</a>
+</div>
+
+<header>
+  <div class="logo-mark">PharmaTool · Pediatric</div>
+  <h1>CrCl <span>Pediatric</span></h1>
+  <p>Bedside Schwartz Formula · Ages 1–18</p>
+</header>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('calc')">Calculate</div>
+  <div class="tab" onclick="switchTab('kref')">K Reference</div>
+  <div class="tab" onclick="switchTab('info')">Reference</div>
+</div>
+
+<div class="container">
+
+  <!-- CALCULATE TAB -->
+  <div class="section active" id="tab-calc">
+
+    <div class="formula-badge">
+      <div class="formula-title">Bedside Schwartz (2009)</div>
+      eGFR = <span class="hl">0.413 × Height (cm)</span> ÷ <span class="hl">SCr (mg/dL)</span><br>
+      <span style="color:#059669;font-size:11px">Updated constant — applies to all pediatric patients</span>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Patient</div>
+
+      <div class="field">
+        <label><span>Sex</span></label>
+        <div class="sex-toggle">
+          <div class="sex-btn active" id="btn-male" onclick="setSex('M')">♂ Male</div>
+          <div class="sex-btn" id="btn-female" onclick="setSex('F')">♀ Female</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label><span>Age</span></label>
+        <div class="input-row">
+          <input type="number" id="age" placeholder="e.g. 8" min="1" max="18" inputmode="numeric" oninput="updateAgeGroup()">
+          <span class="unit-tag">years</span>
+        </div>
+        <div class="age-group-display" id="age-group-display" style="display:none">
+          <span class="age-group-label" id="age-group-text">—</span>
+          <span class="age-group-val" id="k-display">k = —</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label><span>Height</span></label>
+        <div class="input-row">
+          <input type="number" id="height" placeholder="e.g. 120" min="50" max="200" inputmode="decimal">
+          <span class="unit-tag">cm</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Lab Value</div>
+      <div class="field">
+        <label><span>Serum Creatinine (SCr)</span></label>
+        <div class="input-row">
+          <input type="number" id="scr" placeholder="e.g. 0.5" min="0.1" max="20" step="0.01" inputmode="decimal">
+          <span class="unit-tag">mg/dL</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="error-msg">⚠ Please fill in all fields. Age must be 1–18 years.</div>
+
+    <button class="calc-btn" onclick="calculate()">Calculate Pediatric eGFR</button>
+
+    <div class="result-card" id="result-card">
+      <div class="result-label">Estimated GFR (Schwartz)</div>
+      <div class="result-value" id="result-value">—</div>
+      <div class="result-unit">mL/min/1.73 m²</div>
+      <div class="result-sub" id="result-sub">—</div>
+
+      <div class="stage-bar">
+        <div class="stage-seg" id="seg1"></div>
+        <div class="stage-seg" id="seg2"></div>
+        <div class="stage-seg" id="seg3"></div>
+        <div class="stage-seg" id="seg4"></div>
+        <div class="stage-seg" id="seg5"></div>
+      </div>
+
+      <div class="stage-label" id="stage-label">—</div>
+      <div class="interp" id="interp-text">—</div>
+    </div>
+
+    <div class="disclaimer">
+      ⚠ For ages 1–18 years only. Use original Schwartz for infants. Always interpret in clinical context.
+    </div>
+
+    <span class="reset-btn" onclick="resetForm()">Clear / Reset</span>
+  </div>
+
+  <!-- K REFERENCE TAB -->
+  <div class="section" id="tab-kref">
+    <div class="card">
+      <div class="card-label">K Constant Reference (Original Schwartz)</div>
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.6">
+        The 2009 Bedside Schwartz uses a single constant <strong style="color:var(--accent2)">k = 0.413</strong> for all children. The original 1976 Schwartz used age/sex-specific k values shown below for reference.
+      </p>
+      <table class="ref-table">
+        <tr>
+          <th>k</th>
+          <th>Age / Patient Group</th>
+        </tr>
+        <tr><td>0.33</td><td>Low birth weight infants (&lt; 1 year)</td></tr>
+        <tr><td>0.45</td><td>Term infants (&lt; 1 year)</td></tr>
+        <tr><td>0.55</td><td>Children 1–13 years</td></tr>
+        <tr><td>0.55</td><td>Adolescent girls (13–18 years)</td></tr>
+        <tr><td>0.70</td><td>Adolescent boys (13–18 years)</td></tr>
+        <tr><td>0.413</td><td>All pediatric patients (Bedside 2009)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Normal eGFR Ranges (Pediatric)</div>
+      <table class="ref-table">
+        <tr><th>Age</th><th>Normal eGFR (mL/min/1.73m²)</th></tr>
+        <tr><td>2–8 y</td><td>90 – 133</td></tr>
+        <tr><td>9–12 y</td><td>83 – 143</td></tr>
+        <tr><td>13–21 y</td><td>85 – 139</td></tr>
+      </table>
+    </div>
+
+    <div class="disclaimer">
+      ⚠ Reference ranges are approximate. Interpret results with age-appropriate clinical context.
+    </div>
+  </div>
+
+  <!-- INFO TAB -->
+  <div class="section" id="tab-info">
+
+    <div class="info-block">
+      <h3>Bedside Schwartz Formula (2009)</h3>
+      <p>Updated from the original 1976 Schwartz equation to use a single simplified constant validated against measured GFR by iohexol clearance in the CKiD study.</p>
+      <div class="mono">
+        eGFR (mL/min/1.73m²) =<br>
+        0.413 × Height (cm)<br>
+        ───────────────────<br>
+        &nbsp;&nbsp;&nbsp;SCr (mg/dL)
+      </div>
+    </div>
+
+    <div class="info-block">
+      <h3>Why 0.413?</h3>
+      <p>The original Schwartz used muscle-mass-derived k constants that overestimated GFR by ~40% with modern enzymatic creatinine assays (IDMS-traceable). The 2009 update corrected for this by using the constant 0.413, which is calibrated to contemporary lab methods.</p>
+    </div>
+
+    <div class="info-block">
+      <h3>CKD Staging in Children (KDIGO)</h3>
+      <ul>
+        <li><strong>G1:</strong> ≥ 90 — Normal or high (with other markers)</li>
+        <li><strong>G2:</strong> 60–89 — Mildly decreased</li>
+        <li><strong>G3a:</strong> 45–59 — Mildly-moderately decreased</li>
+        <li><strong>G3b:</strong> 30–44 — Moderately-severely decreased</li>
+        <li><strong>G4:</strong> 15–29 — Severely decreased</li>
+        <li><strong>G5:</strong> &lt; 15 — Kidney failure</li>
+      </ul>
+    </div>
+
+    <div class="info-block">
+      <h3>Important Limitations</h3>
+      <ul>
+        <li>Not validated for infants under 1 year — use neonatal-specific formulas</li>
+        <li>Accuracy depends on steady-state SCr (avoid use in AKI)</li>
+        <li>Height must be measured accurately (standing, not estimated)</li>
+        <li>Less accurate in severe malnutrition or muscle-wasting conditions</li>
+        <li>Always use IDMS-calibrated creatinine assays with this formula</li>
+      </ul>
+    </div>
+
+    <div class="info-block">
+      <h3>When to Use Adult CrCl</h3>
+      <p>For patients ≥ 18 years, switch to the <strong>Cockcroft-Gault</strong> equation (Adult CrCl calculator). Some centres use Schwartz up to age 21 — follow local protocol.</p>
+    </div>
+
+    <div class="disclaimer">
+      ⚠ For clinical decision support only. Pediatric dosing requires specialist review. Not a substitute for clinical judgment.
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let sex = 'M';
+
+  function switchTab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    const tabs = ['calc','kref','info'];
+    document.querySelectorAll('.tab')[tabs.indexOf(id)].classList.add('active');
+  }
+
+  function setSex(s) {
+    sex = s;
+    document.getElementById('btn-male').classList.toggle('active', s === 'M');
+    document.getElementById('btn-female').classList.toggle('active', s === 'F');
+    updateAgeGroup();
+  }
+
+  function getAgeGroup(age) {
+    if (!age || age < 1) return null;
+    if (age < 1) return { label: 'Infant (< 1 yr)', k: 0.45 };
+    if (age <= 12) return { label: 'Child (1–12 yrs)', k: 0.413 };
+    if (sex === 'F') return { label: 'Adolescent female (13–18 yrs)', k: 0.413 };
+    return { label: 'Adolescent male (13–18 yrs)', k: 0.413 };
+  }
+
+  function updateAgeGroup() {
+    const age = parseFloat(document.getElementById('age').value);
+    const display = document.getElementById('age-group-display');
+    const group = getAgeGroup(age);
+    if (group) {
+      display.style.display = 'flex';
+      document.getElementById('age-group-text').textContent = group.label;
+      document.getElementById('k-display').textContent = 'k = ' + group.k;
+    } else {
+      display.style.display = 'none';
+    }
+  }
+
+  function calculate() {
+    const age = parseFloat(document.getElementById('age').value);
+    const height = parseFloat(document.getElementById('height').value);
+    const scr = parseFloat(document.getElementById('scr').value);
+    const errEl = document.getElementById('error-msg');
+
+    if (!age || !height || !scr || age < 1 || age > 18 || height <= 0 || scr <= 0) {
+      errEl.classList.add('show');
+      return;
+    }
+    errEl.classList.remove('show');
+
+    // Bedside Schwartz 2009: eGFR = 0.413 × height / SCr
+    const k = 0.413;
+    const egfr = (k * height) / scr;
+
+    document.getElementById('result-value').textContent = egfr.toFixed(1);
+    document.getElementById('result-sub').textContent =
+      `k = ${k} · Height = ${height} cm · SCr = ${scr} mg/dL`;
+
+    // CKD staging
+    let stage, color, interpText;
+    const segs = document.querySelectorAll('.stage-seg');
+    segs.forEach(s => s.style.background = 'var(--border)');
+
+    if (egfr >= 90) {
+      stage = 'G1 — Normal / High'; color = '#16a34a';
+      segs[4].style.background = color;
+      interpText = '<strong>eGFR ≥ 90:</strong> Normal renal function for age. Ensure other CKD markers (proteinuria, hematuria, imaging) are also assessed before ruling out CKD.';
+    } else if (egfr >= 60) {
+      stage = 'G2 — Mildly Decreased'; color = '#65a30d';
+      segs[3].style.background = color; segs[4].style.background = '#bbf7d0';
+      interpText = '<strong>eGFR 60–89:</strong> Mildly decreased. Clinically significant only if other markers of kidney disease are present. Monitor closely.';
+    } else if (egfr >= 45) {
+      stage = 'G3a — Mildly-Moderately Decreased'; color = '#ca8a04';
+      segs[2].style.background = color;
+      interpText = '<strong>eGFR 45–59:</strong> Moderate reduction. Pediatric nephrology referral recommended. Review all renally-dosed medications.';
+    } else if (egfr >= 30) {
+      stage = 'G3b — Moderately-Severely Decreased'; color = '#ea580c';
+      segs[1].style.background = color;
+      interpText = '<strong>eGFR 30–44:</strong> Significant impairment. Nephrology co-management essential. Dose-adjust all renally cleared drugs. Monitor electrolytes and BP.';
+    } else if (egfr >= 15) {
+      stage = 'G4 — Severely Decreased'; color = '#dc2626';
+      segs[0].style.background = color;
+      interpText = '<strong>eGFR 15–29:</strong> Severe renal impairment. Specialist management required. Prepare for RRT if progressive. Strict drug review needed.';
+    } else {
+      stage = 'G5 — Kidney Failure'; color = '#991b1b';
+      segs[0].style.background = color;
+      interpText = '<strong>eGFR &lt; 15:</strong> Pediatric kidney failure. Urgent nephrology involvement. Consider dialysis. Many medications contraindicated.';
+    }
+
+    const stageEl = document.getElementById('stage-label');
+    stageEl.textContent = stage;
+    stageEl.style.background = color + '18';
+    stageEl.style.color = color;
+    document.getElementById('result-value').style.color = color;
+    document.getElementById('interp-text').innerHTML = interpText;
+
+    document.getElementById('result-card').classList.add('show');
+    document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function resetForm() {
+    ['age','height','scr'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('age-group-display').style.display = 'none';
+    document.getElementById('result-card').classList.remove('show');
+    document.getElementById('error-msg').classList.remove('show');
+    setSex('M');
+  }
+</script>
+</body>
+</html>

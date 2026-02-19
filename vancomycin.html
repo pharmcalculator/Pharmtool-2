@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Vancomycin AUC — PharmaTool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Lora:ital,wght@0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --surface2: #ede9fe;
+    --border: #ddd6fe;
+    --accent: #6d28d9;
+    --accent2: #7c3aed;
+    --warn: #b45309;
+    --danger: #dc2626;
+    --text: #1e1433;
+    --muted: #6b5f8a;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 0 0 60px; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); text-decoration: none; cursor: pointer; padding: 6px 0; }
+  header { width: 100%; background: linear-gradient(135deg, #3b0764, #6d28d9, #7c3aed); padding: 24px 24px 20px; text-align: center; border-bottom: 1px solid #7c3aed44; position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 300px; height: 120px; background: radial-gradient(ellipse, #ffffff18 0%, transparent 70%); }
+  .logo-mark { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 4px; color: #ddd6fe; text-transform: uppercase; margin-bottom: 6px; opacity: 0.9; }
+  header h1 { font-family: 'Lora', serif; font-size: 24px; font-weight: 600; color: #ffffff; letter-spacing: -0.5px; }
+  header h1 span { color: #ddd6fe; font-style: italic; }
+  header p { font-size: 12px; color: #ede9fe; margin-top: 6px; font-weight: 300; }
+
+  .tab-bar { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); width: 100%; max-width: 480px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+  .tab { flex: 1; padding: 12px 8px; text-align: center; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; user-select: none; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .container { width: 100%; max-width: 480px; padding: 20px 16px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .alert-box { background: #fef3c7; border: 1px solid #fcd34d; border-radius: var(--radius); padding: 12px 14px; margin-bottom: 16px; font-size: 12.5px; color: #92400e; line-height: 1.6; }
+  .alert-box strong { color: #78350f; }
+
+  .formula-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px; font-family: 'DM Mono', monospace; font-size: 12px; line-height: 1.9; color: var(--muted); }
+  .formula-badge .formula-title { font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 6px; }
+  .formula-badge .hl { color: var(--accent2); font-weight: 500; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .card-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 14px; font-family: 'DM Mono', monospace; }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .field label span { color: var(--text); font-weight: 500; }
+  .field .hint { font-size: 11px; color: var(--muted); margin-top: 4px; font-style: italic; }
+  .input-row { display: flex; gap: 8px; align-items: center; }
+  .input-row input { flex: 1; background: #faf8ff; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 17px; padding: 12px 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; -webkit-appearance: none; appearance: none; }
+  .input-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #7c3aed20; }
+  .unit-tag { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; min-width: 50px; }
+
+  .calc-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #6d28d9, #7c3aed); border: none; border-radius: var(--radius); color: #ffffff; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 4px; transition: opacity 0.2s, transform 0.1s; box-shadow: 0 4px 12px rgba(109,40,217,0.3); }
+  .calc-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; margin-top: 16px; display: none; animation: fadeUp 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .result-card.show { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .result-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .result-box-label { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .result-box-val { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; }
+  .result-box-unit { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+  .auc-meter { margin: 16px 0; }
+  .auc-meter-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+  .auc-track { height: 10px; background: var(--border); border-radius: 99px; position: relative; overflow: hidden; }
+  .auc-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+  .auc-target-zone { position: absolute; top: 0; left: 40%; width: 20%; height: 100%; background: rgba(109,40,217,0.15); border-left: 2px solid #7c3aed; border-right: 2px solid #7c3aed; }
+
+  .recommendation { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 14px; }
+  .rec-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 10px; font-family: 'DM Mono', monospace; }
+  .rec-text { font-size: 13px; color: var(--text); line-height: 1.65; }
+  .rec-dose { font-family: 'DM Mono', monospace; font-size: 18px; color: var(--accent2); font-weight: 500; margin: 8px 0; }
+
+  .interp { font-size: 12.5px; color: var(--muted); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
+  .interp strong { color: var(--text); }
+
+  .info-block { margin-bottom: 20px; }
+  .info-block h3 { font-family: 'Lora', serif; font-size: 17px; font-weight: 600; margin-bottom: 10px; color: var(--text); }
+  .info-block p { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 8px; }
+  .info-block ul { padding-left: 18px; }
+  .info-block ul li { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 4px; }
+  .info-block .mono { font-family: 'DM Mono', monospace; font-size: 12.5px; background: var(--surface2); padding: 10px 14px; border-radius: 8px; line-height: 1.9; color: var(--accent2); border: 1px solid var(--border); }
+
+  .disclaimer { background: #fff7ed; border: 1px solid #fed7aa; border-radius: var(--radius); padding: 12px 14px; font-size: 11.5px; color: var(--warn); line-height: 1.6; margin-top: 8px; }
+  .reset-btn { display: block; text-align: center; font-size: 13px; color: var(--muted); cursor: pointer; margin-top: 10px; padding: 8px; text-decoration: underline; text-underline-offset: 3px; }
+  .error-msg { font-size: 12px; color: var(--danger); margin-top: 6px; display: none; }
+  .error-msg.show { display: block; }
+</style>
+</head>
+<body>
+
+<div style="width:100%;max-width:480px;padding:12px 16px 0;margin:0 auto">
+  <a class="back-btn" href="index.html">← Back to PharmaTool</a>
+</div>
+
+<header>
+  <div class="logo-mark">PharmaTool · Antibiotic TDM</div>
+  <h1>Vancomycin <span>AUC</span></h1>
+  <p>AUC/MIC Target-Attainment · ASHP/IDSA 2020 Guidelines</p>
+</header>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('calc')">Calculate</div>
+  <div class="tab" onclick="switchTab('interpret')">Interpret</div>
+  <div class="tab" onclick="switchTab('info')">Reference</div>
+</div>
+
+<div class="container">
+
+  <!-- CALCULATE TAB -->
+  <div class="section active" id="tab-calc">
+
+    <div class="alert-box">
+      <strong>⚠ Two-Level Bayesian Estimation</strong><br>
+      Enter a peak and trough level from the <em>same</em> dosing interval. Use levels drawn at steady state (≥3 doses). For single-level estimation, enter only the trough.
+    </div>
+
+    <div class="formula-badge">
+      <div class="formula-title">AUC Target (ASHP/IDSA 2020)</div>
+      Target: <span class="hl">AUC₂₄ = 400–600 mg·h/L</span><br>
+      For serious MRSA infections (MIC ≤ 1 mg/L)<br>
+      <span style="color:#6d28d9;font-size:11px">AUC/MIC target: 400–600 (assumes MIC = 1)</span>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Patient</div>
+      <div class="field">
+        <label><span>Weight</span></label>
+        <div class="input-row">
+          <input type="number" id="weight" placeholder="e.g. 70" min="20" max="300" inputmode="decimal">
+          <span class="unit-tag">kg</span>
+        </div>
+      </div>
+      <div class="field">
+        <label><span>CrCl</span> — Use CrCl Calculator if needed</label>
+        <div class="input-row">
+          <input type="number" id="crcl" placeholder="e.g. 60" min="1" max="200" inputmode="decimal">
+          <span class="unit-tag">mL/min</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Current Regimen</div>
+      <div class="field">
+        <label><span>Dose</span></label>
+        <div class="input-row">
+          <input type="number" id="dose" placeholder="e.g. 1500" min="250" max="4000" inputmode="numeric">
+          <span class="unit-tag">mg</span>
+        </div>
+      </div>
+      <div class="field">
+        <label><span>Dosing Interval (τ)</span></label>
+        <div class="input-row">
+          <input type="number" id="interval" placeholder="e.g. 12" min="6" max="48" step="6" inputmode="numeric">
+          <span class="unit-tag">hours</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Drug Levels (Steady State)</div>
+      <div class="field">
+        <label><span>Trough Level</span> — drawn just before next dose</label>
+        <div class="input-row">
+          <input type="number" id="trough" placeholder="e.g. 12" min="0.5" max="60" step="0.1" inputmode="decimal">
+          <span class="unit-tag">mg/L</span>
+        </div>
+        <div class="hint">Required for calculation</div>
+      </div>
+      <div class="field">
+        <label><span>Peak Level</span> — drawn 1–2h after infusion end</label>
+        <div class="input-row">
+          <input type="number" id="peak" placeholder="e.g. 35" min="1" max="100" step="0.1" inputmode="decimal">
+          <span class="unit-tag">mg/L</span>
+        </div>
+        <div class="hint">Optional — improves AUC accuracy</div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="error-msg">⚠ Please fill in weight, CrCl, dose, interval, and trough level.</div>
+
+    <button class="calc-btn" onclick="calculate()">Estimate AUC₂₄</button>
+
+    <div class="result-card" id="result-card">
+      <div class="result-grid">
+        <div class="result-box">
+          <div class="result-box-label">AUC₂₄</div>
+          <div class="result-box-val" id="auc-val">—</div>
+          <div class="result-box-unit">mg·h/L</div>
+        </div>
+        <div class="result-box">
+          <div class="result-box-label">AUC/MIC</div>
+          <div class="result-box-val" id="aucmic-val">—</div>
+          <div class="result-box-unit">(MIC=1)</div>
+        </div>
+        <div class="result-box">
+          <div class="result-box-label">Ke (elim. rate)</div>
+          <div class="result-box-val" id="ke-val">—</div>
+          <div class="result-box-unit">h⁻¹</div>
+        </div>
+        <div class="result-box">
+          <div class="result-box-label">Half-Life</div>
+          <div class="result-box-val" id="t12-val">—</div>
+          <div class="result-box-unit">hours</div>
+        </div>
+      </div>
+
+      <div class="auc-meter">
+        <div class="auc-meter-label">
+          <span>0</span><span>200</span><span style="color:var(--accent);font-weight:600">400–600 ✓</span><span>800</span><span>1000+</span>
+        </div>
+        <div class="auc-track">
+          <div class="auc-fill" id="auc-fill" style="width:0%"></div>
+          <div class="auc-target-zone"></div>
+        </div>
+      </div>
+
+      <div class="recommendation" id="recommendation">
+        <div class="rec-title">Dosing Recommendation</div>
+        <div class="rec-text" id="rec-text">—</div>
+        <div class="rec-dose" id="rec-dose">—</div>
+      </div>
+
+      <div class="interp" id="interp-text">—</div>
+    </div>
+
+    <div class="disclaimer">
+      ⚠ AUC estimation requires clinical pharmacist review. This tool provides estimates only — Bayesian software (e.g., DoseMe, Bivista) is preferred for precision dosing.
+    </div>
+    <span class="reset-btn" onclick="resetForm()">Clear / Reset</span>
+  </div>
+
+  <!-- INTERPRET TAB -->
+  <div class="section" id="tab-interpret">
+    <div class="card">
+      <div class="card-label">AUC₂₄ Interpretation Guide</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <tr><th style="text-align:left;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:1px">AUC₂₄</th><th style="text-align:left;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:1px">Interpretation</th><th style="text-align:left;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:1px">Action</th></tr>
+        <tr><td style="padding:8px 0;border-bottom:1px solid var(--border);color:#16a34a;font-family:'DM Mono',monospace;font-size:12px">&lt; 400</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">Sub-therapeutic</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Increase dose or shorten interval</td></tr>
+        <tr><td style="padding:8px 0;border-bottom:1px solid var(--border);color:#7c3aed;font-family:'DM Mono',monospace;font-size:12px">400–600</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">✅ Target achieved</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Continue current regimen, monitor</td></tr>
+        <tr><td style="padding:8px 0;border-bottom:1px solid var(--border);color:#ea580c;font-family:'DM Mono',monospace;font-size:12px">600–800</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">Supra-therapeutic</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Reduce dose, monitor renal function</td></tr>
+        <tr><td style="padding:8px 0;color:#dc2626;font-family:'DM Mono',monospace;font-size:12px">&gt; 800</td><td style="padding:8px 0;font-size:12.5px">Toxic — hold dose</td><td style="padding:8px 0;font-size:12px;color:var(--muted)">Hold vancomycin, reassess urgently</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-label">Trough-Only Reference (Legacy)</div>
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:12px">Although AUC-guided dosing is now preferred, trough-only targets are still used in some settings:</p>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <tr><th style="text-align:left;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:1px">Trough</th><th style="text-align:left;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:1px">Indication</th></tr>
+        <tr><td style="padding:8px 0;border-bottom:1px solid var(--border);color:#7c3aed;font-family:'DM Mono',monospace;font-size:12px">10–15 mg/L</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">Mild-moderate infections</td></tr>
+        <tr><td style="padding:8px 0;color:#7c3aed;font-family:'DM Mono',monospace;font-size:12px">15–20 mg/L</td><td style="padding:8px 0;font-size:12.5px">Serious MRSA (pneumonia, bacteremia)</td></tr>
+      </table>
+    </div>
+    <div class="disclaimer">⚠ AUC-guided dosing supersedes trough-only monitoring per ASHP/IDSA 2020 guidelines for serious MRSA infections.</div>
+  </div>
+
+  <!-- INFO TAB -->
+  <div class="section" id="tab-info">
+    <div class="info-block">
+      <h3>AUC-Guided Vancomycin Dosing</h3>
+      <p>Per the 2020 ASHP/IDSA/SIDP consensus guidelines, AUC/MIC-guided dosing is recommended over trough-only monitoring for patients with serious MRSA infections.</p>
+    </div>
+    <div class="info-block">
+      <h3>AUC Estimation (Two-Level Method)</h3>
+      <div class="mono">
+        Ke = ln(Peak/Trough) / (T_peak − T_trough)<br>
+        Vd ≈ Dose / (Peak − Trough × e^(−Ke×t))<br>
+        AUC_τ = Dose / (Ke × Vd)<br>
+        AUC₂₄ = AUC_τ × (24 / τ)
+      </div>
+    </div>
+    <div class="info-block">
+      <h3>Initial Dosing Guidance</h3>
+      <ul>
+        <li><strong>Loading dose:</strong> 25–30 mg/kg IV (max 3g) for serious infections</li>
+        <li><strong>Maintenance:</strong> 15–20 mg/kg q8–12h (based on CrCl)</li>
+        <li><strong>Target AUC₂₄:</strong> 400–600 mg·h/L</li>
+        <li><strong>Infusion rate:</strong> Max 1g/hour to reduce Red Man Syndrome</li>
+      </ul>
+    </div>
+    <div class="info-block">
+      <h3>Renal Dosing Reference</h3>
+      <ul>
+        <li><strong>CrCl &gt; 90:</strong> q8–12h typical</li>
+        <li><strong>CrCl 50–89:</strong> q12h</li>
+        <li><strong>CrCl 20–49:</strong> q24h</li>
+        <li><strong>CrCl &lt; 20 / HD:</strong> Individualized — consult specialist</li>
+      </ul>
+    </div>
+    <div class="info-block">
+      <h3>Nephrotoxicity Monitoring</h3>
+      <p>Monitor SCr every 48–72h in stable patients, daily in critically ill. Risk increases with prolonged courses, concomitant nephrotoxins (aminoglycosides, NSAIDs, contrast), and AUC &gt; 600.</p>
+    </div>
+    <div class="disclaimer">⚠ Bayesian dosing software (DoseMe, Bivista, InsightRx) is preferred for precision AUC estimation. This calculator provides a first-order approximation only.</div>
+  </div>
+
+</div>
+
+<script>
+  function switchTab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    ['calc','interpret','info'].forEach((t,i) => { if(t===id) document.querySelectorAll('.tab')[i].classList.add('active'); });
+  }
+
+  function calculate() {
+    const weight = parseFloat(document.getElementById('weight').value);
+    const crcl = parseFloat(document.getElementById('crcl').value);
+    const dose = parseFloat(document.getElementById('dose').value);
+    const tau = parseFloat(document.getElementById('interval').value);
+    const trough = parseFloat(document.getElementById('trough').value);
+    const peak = parseFloat(document.getElementById('peak').value);
+    const errEl = document.getElementById('error-msg');
+
+    if (!weight || !crcl || !dose || !tau || !trough) { errEl.classList.add('show'); return; }
+    errEl.classList.remove('show');
+
+    // Population-based Ke if no peak provided
+    // Ke (h-1) estimate from CrCl: Ke = 0.00083 * CrCl + 0.0044 (Matzke equation)
+    let Ke, Vd, AUC24;
+
+    if (peak && peak > trough) {
+      // Two-level method: assume peak drawn 2h post infusion, trough just before dose
+      const tPeakToTrough = tau - 2; // hours between levels
+      Ke = Math.log(peak / trough) / tPeakToTrough;
+      // Vd using one-compartment model
+      Vd = dose / ((peak - trough * Math.exp(-Ke * (tau - tPeakToTrough))) * Ke);
+      if (Vd <= 0 || isNaN(Vd)) Vd = 0.7 * weight; // fallback
+      const AUCtau = dose / (Ke * Vd);
+      AUC24 = AUCtau * (24 / tau);
+    } else {
+      // Single trough — population Ke + Vd
+      Ke = 0.00083 * crcl + 0.0044;
+      Vd = 0.7 * weight; // L
+      const AUCtau = dose / (Ke * Vd);
+      AUC24 = AUCtau * (24 / tau);
+    }
+
+    const t12 = 0.693 / Ke;
+    const aucMIC = AUC24; // assumes MIC = 1
+
+    document.getElementById('auc-val').textContent = AUC24.toFixed(0);
+    document.getElementById('aucmic-val').textContent = AUC24.toFixed(0);
+    document.getElementById('ke-val').textContent = Ke.toFixed(4);
+    document.getElementById('t12-val').textContent = t12.toFixed(1);
+
+    // AUC meter — scale 0–1000
+    const fillPct = Math.min((AUC24 / 1000) * 100, 100);
+    let fillColor = '#7c3aed';
+    if (AUC24 < 400) fillColor = '#f59e0b';
+    else if (AUC24 > 600) fillColor = '#ea580c';
+    else fillColor = '#7c3aed';
+    document.getElementById('auc-fill').style.width = fillPct + '%';
+    document.getElementById('auc-fill').style.background = fillColor;
+
+    // Recommendation
+    let recText, recDose, interpText;
+    const targetAUC = 500; // midpoint of 400-600
+    const newDose = (dose * targetAUC) / AUC24;
+    const roundedDose = Math.round(newDose / 250) * 250;
+
+    if (AUC24 < 400) {
+      recText = 'AUC is sub-therapeutic. Consider increasing dose to approach target AUC of 400–600 mg·h/L.';
+      recDose = `Suggested dose: ~${roundedDose} mg q${tau}h`;
+      interpText = `<strong>Sub-therapeutic exposure.</strong> Risk of treatment failure. Increase total daily dose. Review interval — consider more frequent dosing if CrCl supports it. Re-level after adjustment.`;
+    } else if (AUC24 <= 600) {
+      recText = 'AUC is within the target range (400–600 mg·h/L). Continue current regimen.';
+      recDose = `Continue: ${dose} mg q${tau}h ✅`;
+      interpText = `<strong>Target AUC achieved.</strong> Continue current regimen. Monitor SCr q48–72h. Repeat levels if renal function changes or if clinical response is inadequate.`;
+    } else if (AUC24 <= 800) {
+      recText = 'AUC is supra-therapeutic. Reduce dose to avoid nephrotoxicity.';
+      recDose = `Suggested dose: ~${roundedDose} mg q${tau}h`;
+      interpText = `<strong>Supra-therapeutic exposure.</strong> Increased nephrotoxicity risk. Reduce daily dose. Consider extending interval if trough is elevated. Monitor SCr daily.`;
+    } else {
+      recText = 'AUC is critically elevated. Hold vancomycin and reassess urgently.';
+      recDose = `⚠ Hold dose — consult clinical pharmacist immediately`;
+      interpText = `<strong>Toxic AUC.</strong> High risk of acute kidney injury. Hold vancomycin, check SCr stat. Reassess indication, renal function, and alternative agents. Do not redose until reviewed by specialist.`;
+    }
+
+    document.getElementById('rec-text').textContent = recText;
+    document.getElementById('rec-dose').textContent = recDose;
+    document.getElementById('rec-dose').style.color = AUC24 > 800 ? '#dc2626' : AUC24 >= 400 && AUC24 <= 600 ? '#16a34a' : '#ea580c';
+    document.getElementById('interp-text').innerHTML = interpText;
+    document.getElementById('result-card').classList.add('show');
+    document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function resetForm() {
+    ['weight','crcl','dose','interval','trough','peak'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('result-card').classList.remove('show');
+    document.getElementById('error-msg').classList.remove('show');
+  }
+</script>
+</body>
+</html>

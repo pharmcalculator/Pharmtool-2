@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>IV to Oral — PharmaTool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Lora:ital,wght@0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0fdfa;
+    --surface: #ffffff;
+    --surface2: #ccfbf1;
+    --border: #99f6e4;
+    --accent: #0f766e;
+    --accent2: #0d9488;
+    --warn: #b45309;
+    --danger: #dc2626;
+    --text: #0f2922;
+    --muted: #3d7a72;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 0 0 60px; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); text-decoration: none; cursor: pointer; padding: 6px 0; }
+  header { width: 100%; background: linear-gradient(135deg, #134e4a, #0f766e, #0d9488); padding: 24px 24px 20px; text-align: center; border-bottom: 1px solid #0d948844; position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 300px; height: 120px; background: radial-gradient(ellipse, #ffffff18 0%, transparent 70%); }
+  .logo-mark { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 4px; color: #99f6e4; text-transform: uppercase; margin-bottom: 6px; opacity: 0.9; }
+  header h1 { font-family: 'Lora', serif; font-size: 24px; font-weight: 600; color: #ffffff; letter-spacing: -0.5px; }
+  header h1 span { color: #99f6e4; font-style: italic; }
+  header p { font-size: 12px; color: #ccfbf1; margin-top: 6px; font-weight: 300; }
+
+  .tab-bar { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); width: 100%; max-width: 480px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+  .tab { flex: 1; padding: 12px 8px; text-align: center; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; user-select: none; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .container { width: 100%; max-width: 480px; padding: 20px 16px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .card-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 14px; font-family: 'DM Mono', monospace; }
+
+  /* Drug search */
+  .drug-search { position: relative; margin-bottom: 16px; }
+  .drug-search input { width: 100%; background: #f0fdfa; border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'DM Sans', monospace; font-size: 15px; padding: 13px 16px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+  .drug-search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #0f766e20; }
+  .drug-search input::placeholder { color: var(--muted); }
+  .drug-list { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-top: 6px; overflow: hidden; display: none; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .drug-list.show { display: block; }
+  .drug-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  .drug-item:last-child { border-bottom: none; }
+  .drug-item:hover { background: var(--surface2); }
+  .drug-item-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .drug-item-class { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+
+  /* Selected drug card */
+  .selected-drug { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: none; }
+  .selected-drug.show { display: block; }
+  .selected-drug-name { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .selected-drug-class { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 12px; }
+  .bioavail-row { display: flex; gap: 10px; }
+  .bioavail-box { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; text-align: center; }
+  .bioavail-label { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .bioavail-val { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: var(--accent2); }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .field label span { color: var(--text); font-weight: 500; }
+  .input-row { display: flex; gap: 8px; align-items: center; }
+  .input-row input { flex: 1; background: #f0fdfa; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 17px; padding: 12px 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; -webkit-appearance: none; appearance: none; }
+  .input-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #0f766e20; }
+  .unit-tag { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; min-width: 36px; }
+
+  /* Route toggle */
+  .route-toggle { display: flex; gap: 8px; }
+  .route-btn { flex: 1; padding: 10px 8px; border-radius: 8px; border: 1px solid var(--border); background: #f0fdfa; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; text-align: center; transition: all 0.18s; user-select: none; }
+  .route-btn.active { border-color: var(--accent); background: var(--surface2); color: var(--accent); }
+
+  .calc-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #0f766e, #0d9488); border: none; border-radius: var(--radius); color: #ffffff; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 4px; transition: opacity 0.2s, transform 0.1s; box-shadow: 0 4px 12px rgba(15,118,110,0.3); }
+  .calc-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; margin-top: 16px; display: none; animation: fadeUp 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .result-card.show { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .conversion-flow { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .conv-box { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .conv-label { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+  .conv-val { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; }
+  .conv-unit { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .conv-arrow { font-size: 22px; color: var(--accent2); flex-shrink: 0; }
+
+  .criteria-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+  .criteria-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 10px; font-family: 'DM Mono', monospace; }
+  .criteria-list { list-style: none; padding: 0; }
+  .criteria-list li { font-size: 13px; color: var(--text); padding: 4px 0; display: flex; gap: 8px; align-items: flex-start; line-height: 1.4; }
+  .criteria-list li::before { content: '✓'; color: var(--accent); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .criteria-list li.warn::before { content: '⚠'; color: #ea580c; }
+
+  .interp { font-size: 12.5px; color: var(--muted); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
+  .interp strong { color: var(--text); }
+
+  /* Drug table */
+  .drug-ref-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .drug-ref-table th { text-align: left; color: var(--muted); padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; }
+  .drug-ref-table td { padding: 8px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .drug-ref-table td:first-child { color: var(--accent2); font-family: 'DM Mono', monospace; font-size: 12px; width: 120px; }
+  .drug-ref-table tr:last-child td { border-bottom: none; }
+
+  .info-block { margin-bottom: 20px; }
+  .info-block h3 { font-family: 'Lora', serif; font-size: 17px; font-weight: 600; margin-bottom: 10px; color: var(--text); }
+  .info-block p { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 8px; }
+  .info-block ul { padding-left: 18px; }
+  .info-block ul li { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 4px; }
+
+  .disclaimer { background: #fff7ed; border: 1px solid #fed7aa; border-radius: var(--radius); padding: 12px 14px; font-size: 11.5px; color: var(--warn); line-height: 1.6; margin-top: 8px; }
+  .reset-btn { display: block; text-align: center; font-size: 13px; color: var(--muted); cursor: pointer; margin-top: 10px; padding: 8px; text-decoration: underline; text-underline-offset: 3px; }
+  .error-msg { font-size: 12px; color: var(--danger); margin-top: 6px; display: none; }
+  .error-msg.show { display: block; }
+</style>
+</head>
+<body>
+
+<div style="width:100%;max-width:480px;padding:12px 16px 0;margin:0 auto">
+  <a class="back-btn" href="index.html">← Back to PharmaTool</a>
+</div>
+
+<header>
+  <div class="logo-mark">PharmaTool · Stewardship</div>
+  <h1>IV → <span>Oral</span></h1>
+  <p>Switch Therapy · Bioavailability-Based Conversion</p>
+</header>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('calc')">Convert</div>
+  <div class="tab" onclick="switchTab('table')">Drug Table</div>
+  <div class="tab" onclick="switchTab('info')">Criteria</div>
+</div>
+
+<div class="container">
+
+  <!-- CONVERT TAB -->
+  <div class="section active" id="tab-calc">
+
+    <div class="card">
+      <div class="card-label">Select Drug</div>
+      <div class="drug-search">
+        <input type="text" id="drug-input" placeholder="Search drug name..." oninput="searchDrug()" autocomplete="off">
+        <div class="drug-list" id="drug-list"></div>
+      </div>
+      <div class="selected-drug" id="selected-drug">
+        <div class="selected-drug-name" id="sel-name">—</div>
+        <div class="selected-drug-class" id="sel-class">—</div>
+        <div class="bioavail-row">
+          <div class="bioavail-box">
+            <div class="bioavail-label">IV Bioavail.</div>
+            <div class="bioavail-val">100%</div>
+          </div>
+          <div class="bioavail-box">
+            <div class="bioavail-label">Oral Bioavail.</div>
+            <div class="bioavail-val" id="sel-oral-f">—%</div>
+          </div>
+          <div class="bioavail-box">
+            <div class="bioavail-label">IV:Oral Ratio</div>
+            <div class="bioavail-val" id="sel-ratio">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Current IV Dose</div>
+      <div class="field">
+        <label><span>IV Dose</span></label>
+        <div class="input-row">
+          <input type="number" id="iv-dose" placeholder="e.g. 400" min="1" max="10000" inputmode="decimal">
+          <span class="unit-tag">mg</span>
+        </div>
+      </div>
+      <div class="field">
+        <label><span>IV Frequency</span></label>
+        <div class="route-toggle">
+          <div class="route-btn active" id="freq-q8" onclick="setFreq('q8h','freq-q8')">q8h</div>
+          <div class="route-btn" id="freq-q12" onclick="setFreq('q12h','freq-q12')">q12h</div>
+          <div class="route-btn" id="freq-q24" onclick="setFreq('q24h','freq-q24')">q24h</div>
+          <div class="route-btn" id="freq-bd" onclick="setFreq('BD','freq-bd')">BD</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="error-msg">⚠ Please select a drug and enter the IV dose.</div>
+
+    <button class="calc-btn" onclick="calculate()">Calculate Oral Equivalent</button>
+
+    <div class="result-card" id="result-card">
+      <div class="conversion-flow">
+        <div class="conv-box">
+          <div class="conv-label">IV Dose</div>
+          <div class="conv-val" id="res-iv" style="color:#0f766e">—</div>
+          <div class="conv-unit">mg <span id="res-iv-freq">—</span></div>
+        </div>
+        <div class="conv-arrow">→</div>
+        <div class="conv-box">
+          <div class="conv-label">Oral Equivalent</div>
+          <div class="conv-val" id="res-oral" style="color:#0d9488">—</div>
+          <div class="conv-unit">mg <span id="res-oral-freq">—</span></div>
+        </div>
+      </div>
+
+      <div class="criteria-box">
+        <div class="criteria-title">Switch Criteria Checklist</div>
+        <ul class="criteria-list" id="criteria-list">
+          <li>Patient clinically stable and afebrile &gt; 24–48h</li>
+          <li>Tolerating oral medications and fluids</li>
+          <li>Functioning GI tract (no vomiting, ileus, malabsorption)</li>
+          <li>No indication requiring IV route (CNS infection, endocarditis)</li>
+          <li>Oral formulation available for this drug</li>
+        </ul>
+      </div>
+
+      <div class="interp" id="interp-text">—</div>
+    </div>
+
+    <div class="disclaimer">⚠ IV-to-oral conversion requires clinical assessment. Always verify with current product monograph and institutional switch therapy guidelines.</div>
+    <span class="reset-btn" onclick="resetForm()">Clear / Reset</span>
+  </div>
+
+  <!-- DRUG TABLE TAB -->
+  <div class="section" id="tab-table">
+    <div class="card">
+      <div class="card-label">IV:Oral Bioavailability Reference</div>
+      <table class="drug-ref-table">
+        <tr>
+          <th>Drug</th>
+          <th>Oral F (%)</th>
+          <th>IV:Oral Ratio</th>
+          <th>Notes</th>
+        </tr>
+        <tr><td>Amoxicillin</td><td>~90%</td><td>1:1</td><td>High F, good switch candidate</td></tr>
+        <tr><td>Ampicillin</td><td>~40%</td><td>1:2.5</td><td>Use amoxicillin orally instead</td></tr>
+        <tr><td>Ciprofloxacin</td><td>~70–80%</td><td>1:1.25</td><td>Excellent oral bioavailability</td></tr>
+        <tr><td>Levofloxacin</td><td>~99%</td><td>1:1</td><td>Virtually identical IV/oral</td></tr>
+        <tr><td>Moxifloxacin</td><td>~90%</td><td>1:1</td><td>Direct switch</td></tr>
+        <tr><td>Metronidazole</td><td>~100%</td><td>1:1</td><td>Direct switch, preferred oral</td></tr>
+        <tr><td>Fluconazole</td><td>~90%</td><td>1:1</td><td>Same dose IV and oral</td></tr>
+        <tr><td>Voriconazole</td><td>~96%</td><td>1:1</td><td>Direct switch; take fasted</td></tr>
+        <tr><td>Clindamycin</td><td>~90%</td><td>1:1</td><td>Excellent oral availability</td></tr>
+        <tr><td>Linezolid</td><td>~100%</td><td>1:1</td><td>Cost driver for IV-to-oral</td></tr>
+        <tr><td>Trimethoprim</td><td>~100%</td><td>1:1</td><td>Direct switch</td></tr>
+        <tr><td>Doxycycline</td><td>~93%</td><td>1:1</td><td>Direct switch</td></tr>
+        <tr><td>Co-amoxiclav</td><td>~70%</td><td>1:1.5</td><td>Dose rounding may be needed</td></tr>
+        <tr><td>Omeprazole</td><td>~65%</td><td>1:1.5</td><td>Usually given at same dose</td></tr>
+      </table>
+    </div>
+    <div class="disclaimer">⚠ Bioavailability figures are approximate. Food interactions, patient-specific factors, and formulation differences affect actual absorption.</div>
+  </div>
+
+  <!-- INFO TAB -->
+  <div class="section" id="tab-info">
+    <div class="info-block">
+      <h3>IV-to-Oral Switch Therapy</h3>
+      <p>Switching from IV to oral antibiotics (and other drugs) when clinically appropriate reduces costs, complications (line infections, phlebitis), and hospital stay without compromising outcomes.</p>
+    </div>
+    <div class="info-block">
+      <h3>General Switch Criteria (OPAT / AMS)</h3>
+      <ul>
+        <li>Clinically improving — afebrile &gt; 24–48 hours</li>
+        <li>WBC normalizing or trending down</li>
+        <li>Tolerating oral intake (no vomiting, no ileus)</li>
+        <li>No site of infection requiring IV-only penetration (e.g., CNS, endocarditis, osteomyelitis in some cases)</li>
+        <li>An oral agent with adequate bioavailability is available</li>
+        <li>No malabsorption or GI pathology affecting absorption</li>
+      </ul>
+    </div>
+    <div class="info-block">
+      <h3>When NOT to Switch</h3>
+      <ul>
+        <li>Bacterial endocarditis (most cases)</li>
+        <li>CNS infections (meningitis, brain abscess)</li>
+        <li>Bacteremia due to S. aureus (complex cases)</li>
+        <li>Severe sepsis / septic shock still requiring resuscitation</li>
+        <li>Documented malabsorption or poor GI absorption</li>
+        <li>Drug has no oral equivalent with adequate coverage</li>
+      </ul>
+    </div>
+    <div class="info-block">
+      <h3>Bioavailability Formula</h3>
+      <p>When oral bioavailability (F) is less than 100%, the oral dose required to achieve the same systemic exposure is:</p>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-family:'DM Mono',monospace;font-size:12.5px;color:var(--accent2);line-height:1.8">
+        Oral dose = IV dose ÷ F (oral fraction)<br>
+        e.g. Ampicillin 500mg IV ÷ 0.4 = 1250mg oral<br>
+        → Use amoxicillin 500mg (higher F ≈ 90%) instead
+      </div>
+    </div>
+    <div class="disclaimer">⚠ Always refer to local antimicrobial stewardship guidelines and institutional IV-to-oral switch policies.</div>
+  </div>
+
+</div>
+
+<script>
+  // Drug database with oral bioavailability
+  const drugs = [
+    { name: 'Amoxicillin', class: 'Penicillin antibiotic', f: 0.90, ratio: '1:1', notes: 'Direct switch. High oral F.' },
+    { name: 'Ampicillin', class: 'Penicillin antibiotic', f: 0.40, ratio: '1:2.5', notes: 'Poor oral F — prefer amoxicillin orally.' },
+    { name: 'Co-amoxiclav', class: 'Penicillin + β-lactamase inhibitor', f: 0.70, ratio: '1:1.5', notes: 'Round to available tablet strengths (375mg, 625mg).' },
+    { name: 'Ciprofloxacin', class: 'Fluoroquinolone antibiotic', f: 0.75, ratio: '1:1.25', notes: 'Excellent oral bioavailability. Avoid dairy/antacids.' },
+    { name: 'Levofloxacin', class: 'Fluoroquinolone antibiotic', f: 0.99, ratio: '1:1', notes: 'Virtually identical IV and oral — direct switch.' },
+    { name: 'Moxifloxacin', class: 'Fluoroquinolone antibiotic', f: 0.90, ratio: '1:1', notes: 'Direct switch at same dose.' },
+    { name: 'Metronidazole', class: 'Nitroimidazole antibiotic', f: 1.00, ratio: '1:1', notes: 'Direct switch. Oral preferred over IV.' },
+    { name: 'Clindamycin', class: 'Lincosamide antibiotic', f: 0.90, ratio: '1:1', notes: 'Excellent oral absorption. Direct switch.' },
+    { name: 'Linezolid', class: 'Oxazolidinone antibiotic', f: 1.00, ratio: '1:1', notes: 'Identical IV and oral. Cost-saving switch.' },
+    { name: 'Trimethoprim', class: 'Antifolate antibiotic', f: 1.00, ratio: '1:1', notes: 'Direct switch.' },
+    { name: 'Doxycycline', class: 'Tetracycline antibiotic', f: 0.93, ratio: '1:1', notes: 'Direct switch. Take with food.' },
+    { name: 'Fluconazole', class: 'Azole antifungal', f: 0.90, ratio: '1:1', notes: 'Same dose IV and oral. Direct switch.' },
+    { name: 'Voriconazole', class: 'Azole antifungal', f: 0.96, ratio: '1:1', notes: 'Direct switch. Take on empty stomach.' },
+    { name: 'Itraconazole', class: 'Azole antifungal', f: 0.55, ratio: '1:2', notes: 'Variable absorption. Take with food (capsules).' },
+    { name: 'Omeprazole', class: 'Proton pump inhibitor', f: 0.65, ratio: '1:1', notes: 'Often given at same IV dose orally.' },
+    { name: 'Pantoprazole', class: 'Proton pump inhibitor', f: 0.77, ratio: '1:1', notes: 'Usually switched at same dose.' },
+    { name: 'Ondansetron', class: 'Antiemetic (5-HT3 antagonist)', f: 0.60, ratio: '1:1.5', notes: 'Oral dose usually adequate once tolerating.' },
+    { name: 'Furosemide', class: 'Loop diuretic', f: 0.50, ratio: '1:2', notes: 'Oral dose typically doubled vs IV.' },
+  ];
+
+  let selectedDrug = null;
+  let ivFreq = 'q8h';
+
+  function switchTab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    ['calc','table','info'].forEach((t,i) => { if(t===id) document.querySelectorAll('.tab')[i].classList.add('active'); });
+  }
+
+  function setFreq(f, btnId) {
+    ivFreq = f;
+    document.querySelectorAll('.route-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(btnId).classList.add('active');
+  }
+
+  function searchDrug() {
+    const q = document.getElementById('drug-input').value.toLowerCase();
+    const list = document.getElementById('drug-list');
+    if (q.length < 1) { list.classList.remove('show'); return; }
+    const matches = drugs.filter(d => d.name.toLowerCase().includes(q));
+    list.innerHTML = matches.map(d =>
+      `<div class="drug-item" onclick="selectDrug('${d.name}')">
+        <div class="drug-item-name">${d.name}</div>
+        <div class="drug-item-class">${d.class}</div>
+      </div>`
+    ).join('');
+    list.classList.toggle('show', matches.length > 0);
+  }
+
+  function selectDrug(name) {
+    selectedDrug = drugs.find(d => d.name === name);
+    document.getElementById('drug-input').value = name;
+    document.getElementById('drug-list').classList.remove('show');
+    document.getElementById('sel-name').textContent = selectedDrug.name;
+    document.getElementById('sel-class').textContent = selectedDrug.class;
+    document.getElementById('sel-oral-f').textContent = Math.round(selectedDrug.f * 100) + '%';
+    document.getElementById('sel-ratio').textContent = selectedDrug.ratio;
+    document.getElementById('selected-drug').classList.add('show');
+  }
+
+  function calculate() {
+    const ivDose = parseFloat(document.getElementById('iv-dose').value);
+    const errEl = document.getElementById('error-msg');
+    if (!selectedDrug || !ivDose || ivDose <= 0) { errEl.classList.add('show'); return; }
+    errEl.classList.remove('show');
+
+    const oralDose = ivDose / selectedDrug.f;
+    const roundedOral = Math.round(oralDose / 50) * 50; // round to nearest 50mg
+
+    document.getElementById('res-iv').textContent = ivDose + 'mg';
+    document.getElementById('res-iv-freq').textContent = ivFreq;
+    document.getElementById('res-oral').textContent = roundedOral + 'mg';
+    document.getElementById('res-oral-freq').textContent = ivFreq;
+
+    // Special criteria
+    const criteriaList = document.getElementById('criteria-list');
+    let extraItems = '';
+    if (selectedDrug.name.toLowerCase().includes('voriconazole')) {
+      extraItems += '<li class="warn">Take voriconazole on an empty stomach (1h before or 2h after meals)</li>';
+    }
+    if (selectedDrug.name.toLowerCase().includes('furosemide')) {
+      extraItems += '<li class="warn">Monitor urine output and electrolytes closely after switch</li>';
+    }
+    if (selectedDrug.f < 0.6) {
+      extraItems += '<li class="warn">Low oral bioavailability — ensure GI tract is fully functional before switching</li>';
+    }
+
+    criteriaList.innerHTML = `
+      <li>Patient clinically stable and afebrile &gt; 24–48h</li>
+      <li>Tolerating oral medications and fluids</li>
+      <li>Functioning GI tract (no vomiting, ileus, malabsorption)</li>
+      <li>No indication requiring IV-only penetration</li>
+      <li>Oral formulation of ${selectedDrug.name} is available</li>
+      ${extraItems}
+    `;
+
+    const interpText = `<strong>${selectedDrug.name}:</strong> ${selectedDrug.notes} Oral bioavailability is ~${Math.round(selectedDrug.f*100)}%. IV ${ivDose}mg converts to approximately oral ${roundedOral}mg ${ivFreq}. Confirm dose against formulary and available tablet strengths.`;
+    document.getElementById('interp-text').innerHTML = interpText;
+
+    document.getElementById('result-card').classList.add('show');
+    document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function resetForm() {
+    document.getElementById('drug-input').value = '';
+    document.getElementById('iv-dose').value = '';
+    document.getElementById('selected-drug').classList.remove('show');
+    document.getElementById('result-card').classList.remove('show');
+    document.getElementById('error-msg').classList.remove('show');
+    document.getElementById('drug-list').classList.remove('show');
+    selectedDrug = null;
+  }
+</script>
+</body>
+</html>

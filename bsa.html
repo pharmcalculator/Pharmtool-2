@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BSA Calculator — PharmaTool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Lora:ital,wght@0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf7f0;
+    --surface: #ffffff;
+    --surface2: #fff3e0;
+    --border: #e8d5b7;
+    --accent: #c2410c;
+    --accent2: #ea580c;
+    --warn: #b45309;
+    --danger: #dc2626;
+    --text: #2d1a0e;
+    --muted: #78614a;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 60px;
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--muted); text-decoration: none;
+    cursor: pointer; padding: 6px 0;
+  }
+  header {
+    width: 100%;
+    background: linear-gradient(135deg, #7c2d12, #c2410c, #ea580c);
+    padding: 24px 24px 20px;
+    text-align: center;
+    border-bottom: 1px solid #ea580c44;
+    position: relative; overflow: hidden;
+  }
+  header::before {
+    content: ''; position: absolute;
+    top: -40px; left: 50%; transform: translateX(-50%);
+    width: 300px; height: 120px;
+    background: radial-gradient(ellipse, #ffffff18 0%, transparent 70%);
+  }
+  .logo-mark { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 4px; color: #fed7aa; text-transform: uppercase; margin-bottom: 6px; opacity: 0.9; }
+  header h1 { font-family: 'Lora', serif; font-size: 24px; font-weight: 600; color: #ffffff; letter-spacing: -0.5px; }
+  header h1 span { color: #fed7aa; font-style: italic; }
+  header p { font-size: 12px; color: #ffedd5; margin-top: 6px; font-weight: 300; }
+
+  .tab-bar { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); width: 100%; max-width: 480px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+  .tab { flex: 1; padding: 12px 8px; text-align: center; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; user-select: none; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .container { width: 100%; max-width: 480px; padding: 20px 16px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .formula-badge { background: var(--surface2); border: 1px solid #fcd9a8; border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px; font-family: 'DM Mono', monospace; font-size: 12.5px; line-height: 1.8; color: var(--muted); }
+  .formula-badge .formula-title { font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 6px; }
+  .formula-badge .hl { color: var(--accent2); font-weight: 500; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .card-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 14px; font-family: 'DM Mono', monospace; }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .field label span { color: var(--text); font-weight: 500; }
+  .input-row { display: flex; gap: 8px; align-items: center; }
+  .input-row input { flex: 1; background: #fffbf7; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 17px; padding: 12px 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; -webkit-appearance: none; appearance: none; }
+  .input-row input:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px #ea580c20; }
+  .unit-tag { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; min-width: 36px; }
+
+  /* Method selector */
+  .method-select { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .method-btn { padding: 10px 8px; border-radius: 8px; border: 1px solid var(--border); background: #fffbf7; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; text-align: center; transition: all 0.18s; user-select: none; line-height: 1.4; }
+  .method-btn.active { border-color: var(--accent2); background: #fff3e0; color: var(--accent); }
+  .method-btn small { display: block; font-size: 10px; opacity: 0.7; margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+  .calc-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #c2410c, #ea580c); border: none; border-radius: var(--radius); color: #ffffff; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 4px; transition: opacity 0.2s, transform 0.1s; box-shadow: 0 4px 12px rgba(194,65,12,0.3); }
+  .calc-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; margin-top: 16px; display: none; animation: fadeUp 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .result-card.show { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .result-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 10px; font-family: 'DM Mono', monospace; }
+  .result-value { font-family: 'DM Mono', monospace; font-size: 52px; font-weight: 500; line-height: 1; color: var(--accent); }
+  .result-unit { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--muted); margin: 6px 0 4px; }
+  .result-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+
+  .result-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .result-method-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  .result-method-name { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 4px; }
+  .result-method-val { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: var(--accent2); }
+  .result-method-unit { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+  .interp { font-size: 12.5px; color: var(--muted); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
+  .interp strong { color: var(--text); }
+
+  .dose-example { background: var(--surface2); border: 1px solid #fcd9a8; border-radius: 10px; padding: 14px; margin-top: 14px; }
+  .dose-example-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 10px; font-family: 'DM Mono', monospace; }
+  .dose-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f5d9b0; font-size: 13px; }
+  .dose-row:last-child { border-bottom: none; }
+  .dose-row .drug { color: var(--muted); }
+  .dose-row .dose { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent2); font-weight: 500; }
+
+  .info-block { margin-bottom: 20px; }
+  .info-block h3 { font-family: 'Lora', serif; font-size: 17px; font-weight: 600; margin-bottom: 10px; color: var(--text); }
+  .info-block p { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 8px; }
+  .info-block ul { padding-left: 18px; }
+  .info-block ul li { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 4px; }
+  .info-block .mono { font-family: 'DM Mono', monospace; font-size: 12.5px; background: var(--surface2); padding: 10px 14px; border-radius: 8px; line-height: 1.9; color: var(--accent2); border: 1px solid #fcd9a8; }
+
+  .disclaimer { background: #fff7ed; border: 1px solid #fed7aa; border-radius: var(--radius); padding: 12px 14px; font-size: 11.5px; color: var(--warn); line-height: 1.6; margin-top: 8px; }
+  .reset-btn { display: block; text-align: center; font-size: 13px; color: var(--muted); cursor: pointer; margin-top: 10px; padding: 8px; text-decoration: underline; text-underline-offset: 3px; }
+  .error-msg { font-size: 12px; color: var(--danger); margin-top: 6px; display: none; }
+  .error-msg.show { display: block; }
+</style>
+</head>
+<body>
+
+<div style="width:100%;max-width:480px;padding:12px 16px 0;margin:0 auto">
+  <a class="back-btn" href="index.html">← Back to PharmaTool</a>
+</div>
+
+<header>
+  <div class="logo-mark">PharmaTool · Oncology</div>
+  <h1>Body Surface <span>Area</span></h1>
+  <p>Mosteller · DuBois · Haycock · Gehan-George</p>
+</header>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('calc')">Calculate</div>
+  <div class="tab" onclick="switchTab('dose')">Dose Guide</div>
+  <div class="tab" onclick="switchTab('info')">Reference</div>
+</div>
+
+<div class="container">
+
+  <!-- CALCULATE TAB -->
+  <div class="section active" id="tab-calc">
+
+    <div class="formula-badge">
+      <div class="formula-title">Mosteller (Recommended)</div>
+      BSA = √ [ <span class="hl">Height (cm) × Weight (kg)</span> ÷ <span class="hl">3600</span> ]<br>
+      <span style="color:#c2410c;font-size:11px">Most widely used in oncology dosing</span>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Patient Measurements</div>
+
+      <div class="field">
+        <label><span>Height</span></label>
+        <div class="input-row">
+          <input type="number" id="height" placeholder="e.g. 170" min="50" max="250" inputmode="decimal">
+          <span class="unit-tag">cm</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label><span>Weight</span></label>
+        <div class="input-row">
+          <input type="number" id="weight" placeholder="e.g. 70" min="1" max="300" inputmode="decimal">
+          <span class="unit-tag">kg</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label><span>Formula</span></label>
+        <div class="method-select">
+          <div class="method-btn active" id="m-mosteller" onclick="setMethod('mosteller')">Mosteller<small>Recommended</small></div>
+          <div class="method-btn" id="m-dubois" onclick="setMethod('dubois')">DuBois<small>Classic</small></div>
+          <div class="method-btn" id="m-haycock" onclick="setMethod('haycock')">Haycock<small>Pediatric</small></div>
+          <div class="method-btn" id="m-gehan" onclick="setMethod('gehan')">Gehan-George<small>Alternative</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="error-msg">⚠ Please enter valid height and weight values.</div>
+
+    <button class="calc-btn" onclick="calculate()">Calculate BSA</button>
+
+    <div class="result-card" id="result-card">
+      <div class="result-label">Body Surface Area</div>
+      <div class="result-value" id="result-value">—</div>
+      <div class="result-unit">m²</div>
+      <div class="result-sub" id="result-sub">—</div>
+
+      <div class="result-methods">
+        <div class="result-method-card">
+          <div class="result-method-name">Mosteller</div>
+          <div class="result-method-val" id="val-mosteller">—</div>
+          <div class="result-method-unit">m²</div>
+        </div>
+        <div class="result-method-card">
+          <div class="result-method-name">DuBois</div>
+          <div class="result-method-val" id="val-dubois">—</div>
+          <div class="result-method-unit">m²</div>
+        </div>
+        <div class="result-method-card">
+          <div class="result-method-name">Haycock</div>
+          <div class="result-method-val" id="val-haycock">—</div>
+          <div class="result-method-unit">m²</div>
+        </div>
+        <div class="result-method-card">
+          <div class="result-method-name">Gehan-George</div>
+          <div class="result-method-val" id="val-gehan">—</div>
+          <div class="result-method-unit">m²</div>
+        </div>
+      </div>
+
+      <div class="dose-example" id="dose-example">
+        <div class="dose-example-title">Example BSA-Based Doses</div>
+        <div class="dose-row"><span class="drug">Carboplatin (AUC 5)</span><span class="dose" id="dose-carbo">—</span></div>
+        <div class="dose-row"><span class="drug">Paclitaxel 175 mg/m²</span><span class="dose" id="dose-pacli">—</span></div>
+        <div class="dose-row"><span class="drug">Doxorubicin 60 mg/m²</span><span class="dose" id="dose-doxo">—</span></div>
+        <div class="dose-row"><span class="drug">5-FU 400 mg/m²</span><span class="dose" id="dose-ffu">—</span></div>
+      </div>
+
+      <div class="interp" id="interp-text">—</div>
+    </div>
+
+    <div class="disclaimer">
+      ⚠ BSA-based dosing must be verified against protocol-specific guidelines. Consult oncology pharmacy before calculating chemotherapy doses.
+    </div>
+    <span class="reset-btn" onclick="resetForm()">Clear / Reset</span>
+  </div>
+
+  <!-- DOSE GUIDE TAB -->
+  <div class="section" id="tab-dose">
+    <div class="card">
+      <div class="card-label">Common BSA-Based Chemotherapy Doses</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px">
+        <tr><th style="text-align:left;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:1px">Drug</th><th style="text-align:left;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:1px">Typical Dose</th><th style="text-align:left;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:1px">Notes</th></tr>
+        <tr><td style="padding:8px 0;border-bottom:1px solid var(--border);color:var(--accent2);font-family:'DM Mono',monospace;font-size:12px;width:110px">Paclitaxel</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">135–175 mg/m²</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Cycle q3w</td></tr>
+        <tr><td style="padding:8px 0;border-bottom:1px solid var(--border);color:var(--accent2);font-family:'DM Mono',monospace;font-size:12px">Docetaxel</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">60–100 mg/m²</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Premedicate</td></tr>
+        <tr><td style="padding:8px 0;border-bottom:1px solid var(--border);color:var(--accent2);font-family:'DM Mono',monospace;font-size:12px">Doxorubicin</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">40–75 mg/m²</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Lifetime max 550 mg/m²</td></tr>
+        <tr><td style="padding:8px 0;border-bottom:1px solid var(--border);color:var(--accent2);font-family:'DM Mono',monospace;font-size:12px">5-Fluorouracil</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">400–1000 mg/m²</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Varies by regimen</td></tr>
+        <tr><td style="padding:8px 0;border-bottom:1px solid var(--border);color:var(--accent2);font-family:'DM Mono',monospace;font-size:12px">Gemcitabine</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">1000–1250 mg/m²</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Weekly dosing</td></tr>
+        <tr><td style="padding:8px 0;border-bottom:1px solid var(--border);color:var(--accent2);font-family:'DM Mono',monospace;font-size:12px">Cyclophosphamide</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">500–1500 mg/m²</td><td style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">Hydration required</td></tr>
+        <tr><td style="padding:8px 0;color:var(--accent2);font-family:'DM Mono',monospace;font-size:12px">Methotrexate</td><td style="padding:8px 0;font-size:12.5px">40–3000 mg/m²</td><td style="padding:8px 0;font-size:12px;color:var(--muted)">Wide range by indication</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-label">BSA Capping Policy</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7">Many institutions cap BSA at <strong style="color:var(--text)">2.0 m²</strong> for obese patients to avoid overdosing. Always follow your institution's protocol — some cap at 1.8 m², others use actual BSA. Confirm with the treating oncologist.</p>
+    </div>
+    <div class="disclaimer">⚠ Always verify doses against the specific protocol (e.g., FOLFOX, AC-T, CHOP). Never dose chemotherapy based on calculation alone.</div>
+  </div>
+
+  <!-- INFO TAB -->
+  <div class="section" id="tab-info">
+    <div class="info-block">
+      <h3>Mosteller Formula</h3>
+      <p>The simplest and most widely adopted formula in clinical oncology.</p>
+      <div class="mono">BSA = √ ( Height(cm) × Weight(kg) / 3600 )</div>
+    </div>
+    <div class="info-block">
+      <h3>DuBois & DuBois (1916)</h3>
+      <p>The original and historically most studied formula.</p>
+      <div class="mono">BSA = 0.007184 × H^0.725 × W^0.425</div>
+    </div>
+    <div class="info-block">
+      <h3>Haycock (1978)</h3>
+      <p>Validated across all ages, often preferred in pediatrics.</p>
+      <div class="mono">BSA = 0.024265 × H^0.3964 × W^0.5378</div>
+    </div>
+    <div class="info-block">
+      <h3>Gehan & George (1970)</h3>
+      <p>Alternative formula commonly seen in oncology protocols.</p>
+      <div class="mono">BSA = 0.0235 × H^0.42246 × W^0.51456</div>
+    </div>
+    <div class="info-block">
+      <h3>Normal Adult BSA Reference</h3>
+      <ul>
+        <li><strong>Average male:</strong> ~1.9 m²</li>
+        <li><strong>Average female:</strong> ~1.6 m²</li>
+        <li><strong>Typical adult range:</strong> 1.5 – 2.2 m²</li>
+      </ul>
+    </div>
+    <div class="disclaimer">⚠ BSA is an estimate. Formula selection should follow institutional or protocol-specific guidance.</div>
+  </div>
+
+</div>
+
+<script>
+  let method = 'mosteller';
+
+  function switchTab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    ['calc','dose','info'].forEach((t,i) => { if(t===id) document.querySelectorAll('.tab')[i].classList.add('active'); });
+  }
+
+  function setMethod(m) {
+    method = m;
+    document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('m-' + m).classList.add('active');
+  }
+
+  function calcBSA(h, w, formula) {
+    switch(formula) {
+      case 'mosteller': return Math.sqrt((h * w) / 3600);
+      case 'dubois': return 0.007184 * Math.pow(h, 0.725) * Math.pow(w, 0.425);
+      case 'haycock': return 0.024265 * Math.pow(h, 0.3964) * Math.pow(w, 0.5378);
+      case 'gehan': return 0.0235 * Math.pow(h, 0.42246) * Math.pow(w, 0.51456);
+    }
+  }
+
+  function calculate() {
+    const h = parseFloat(document.getElementById('height').value);
+    const w = parseFloat(document.getElementById('weight').value);
+    const errEl = document.getElementById('error-msg');
+    if (!h || !w || h <= 0 || w <= 0) { errEl.classList.add('show'); return; }
+    errEl.classList.remove('show');
+
+    const bsa = calcBSA(h, w, method);
+    const bsaMosteller = calcBSA(h, w, 'mosteller');
+    const bsaDubois = calcBSA(h, w, 'dubois');
+    const bsaHaycock = calcBSA(h, w, 'haycock');
+    const bsaGehan = calcBSA(h, w, 'gehan');
+
+    document.getElementById('result-value').textContent = bsa.toFixed(2);
+    document.getElementById('result-sub').textContent = `${method.charAt(0).toUpperCase()+method.slice(1)} · H=${h}cm · W=${w}kg`;
+    document.getElementById('val-mosteller').textContent = bsaMosteller.toFixed(2);
+    document.getElementById('val-dubois').textContent = bsaDubois.toFixed(2);
+    document.getElementById('val-haycock').textContent = bsaHaycock.toFixed(2);
+    document.getElementById('val-gehan').textContent = bsaGehan.toFixed(2);
+
+    // Example doses
+    const useBSA = Math.min(bsa, 2.0); // capped
+    document.getElementById('dose-carbo').textContent = (5 * (25 + 25)).toFixed(0) + ' mg (GFR-based)';
+    document.getElementById('dose-pacli').textContent = (175 * useBSA).toFixed(0) + ' mg';
+    document.getElementById('dose-doxo').textContent = (60 * useBSA).toFixed(0) + ' mg';
+    document.getElementById('dose-ffu').textContent = (400 * useBSA).toFixed(0) + ' mg';
+
+    // Interpretation
+    let interpText = '';
+    if (bsa < 1.5) interpText = `<strong>BSA ${bsa.toFixed(2)} m² — Below average.</strong> Verify weight and height are accurate. Some protocols may require dose adjustment guidance for low BSA patients.`;
+    else if (bsa <= 2.0) interpText = `<strong>BSA ${bsa.toFixed(2)} m² — Normal adult range.</strong> Standard protocol doses apply. Confirm with treating oncologist and institutional protocol.`;
+    else interpText = `<strong>BSA ${bsa.toFixed(2)} m² — Above 2.0 m².</strong> Many institutions cap BSA at 2.0 m² for chemotherapy dosing. Confirm capping policy with your institution before proceeding.`;
+
+    document.getElementById('interp-text').innerHTML = interpText;
+    document.getElementById('result-card').classList.add('show');
+    document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function resetForm() {
+    ['height','weight'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('result-card').classList.remove('show');
+    document.getElementById('error-msg').classList.remove('show');
+  }
+</script>
+</body>
+</html>

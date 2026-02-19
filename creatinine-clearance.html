@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CrCl Calculator — PharmaTool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Lora:ital,wght@0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --surface2: #e8f0fe;
+    --border: #d0d9e8;
+    --accent: #16a34a;
+    --accent2: #0284c7;
+    --warn: #ea580c;
+    --danger: #dc2626;
+    --text: #1e293b;
+    --muted: #64748b;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 60px;
+  }
+
+  header {
+    width: 100%;
+    background: linear-gradient(135deg, #0369a1, #0284c7, #0ea5e9);
+    padding: 28px 24px 22px;
+    text-align: center;
+    border-bottom: 1px solid #0ea5e955;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -40px; left: 50%; transform: translateX(-50%);
+    width: 300px; height: 120px;
+    background: radial-gradient(ellipse, #ffffff22 0%, transparent 70%);
+  }
+  .logo-mark {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #bae6fd;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: 0.9;
+  }
+  header h1 {
+    font-family: 'Lora', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+  }
+  header h1 span { color: #bae6fd; font-style: italic; }
+  header p {
+    font-size: 12px;
+    color: #e0f2fe;
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .tab-bar {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  .tab {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .tab.active {
+    color: var(--accent2);
+    border-bottom-color: var(--accent2);
+  }
+
+  .container {
+    width: 100%;
+    max-width: 480px;
+    padding: 20px 16px;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .formula-badge {
+    background: var(--surface2);
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+  .formula-badge .formula-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .formula-badge .hl { color: var(--accent2); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .card-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 400;
+  }
+  .field label span { color: var(--text); font-weight: 500; }
+  .input-row { display: flex; gap: 8px; align-items: center; }
+  .input-row input {
+    flex: 1;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 17px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .input-row input:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 3px #0284c720;
+  }
+  .unit-tag {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    min-width: 36px;
+    text-align: left;
+  }
+
+  .sex-toggle { display: flex; gap: 8px; }
+  .sex-btn {
+    flex: 1;
+    padding: 11px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #f8fafc;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.18s;
+    user-select: none;
+  }
+  .sex-btn.active {
+    border-color: var(--accent2);
+    background: #e0f2fe;
+    color: var(--accent2);
+  }
+
+  .ibw-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .ibw-row .ibw-label { font-size: 13px; color: var(--muted); }
+  .ibw-row .ibw-val { font-family: 'DM Mono', monospace; font-size: 15px; color: var(--accent); }
+
+  .calc-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #0284c7, #16a34a);
+    border: none;
+    border-radius: var(--radius);
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: opacity 0.2s, transform 0.1s;
+    box-shadow: 0 4px 12px rgba(2,132,199,0.3);
+  }
+  .calc-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    margin-top: 16px;
+    display: none;
+    animation: fadeUp 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+  .result-card.show { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .result-top { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 6px; }
+  .result-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 10px; }
+  .result-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 52px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .result-unit { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+
+  .stage-bar {
+    display: flex;
+    gap: 4px;
+    margin: 16px 0 10px;
+  }
+  .stage-seg {
+    flex: 1;
+    height: 6px;
+    border-radius: 99px;
+    background: var(--border);
+    transition: background 0.4s;
+  }
+
+  .stage-label {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+
+  .interp {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    margin-top: 12px;
+  }
+  .interp strong { color: var(--text); }
+
+  .dose-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .dose-table th {
+    text-align: left;
+    color: var(--muted);
+    font-weight: 500;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .dose-table td { padding: 8px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .dose-table td:first-child { color: var(--accent2); font-family: 'DM Mono', monospace; font-size: 12px; width: 110px; }
+  .dose-table tr:last-child td { border-bottom: none; }
+
+  .info-block { margin-bottom: 20px; }
+  .info-block h3 {
+    font-family: 'Lora', serif;
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .info-block p { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 8px; }
+  .info-block ul { padding-left: 18px; }
+  .info-block ul li { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 4px; }
+  .info-block .mono {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    background: var(--surface2);
+    padding: 10px 14px;
+    border-radius: 8px;
+    line-height: 1.9;
+    color: var(--accent2);
+    border: 1px solid #bfdbfe;
+  }
+
+  .disclaimer {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-size: 11.5px;
+    color: var(--warn);
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+
+  .reset-btn {
+    display: block;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    margin-top: 10px;
+    padding: 8px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .error-msg {
+    font-size: 12px;
+    color: var(--danger);
+    margin-top: 6px;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+
+  .adj-note {
+    font-size: 11.5px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">PharmaTool</div>
+  <h1>CrCl <span>Calculator</span></h1>
+  <p>Cockcroft-Gault Equation · Clinical Use Only</p>
+</header>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('calc')">Calculate</div>
+  <div class="tab" onclick="switchTab('dose')">Dose Guide</div>
+  <div class="tab" onclick="switchTab('info')">Reference</div>
+</div>
+
+<div class="container">
+
+  <!-- CALCULATE TAB -->
+  <div class="section active" id="tab-calc">
+
+    <div class="formula-badge">
+      <div class="formula-title">Cockcroft-Gault</div>
+      CrCl = <span class="hl">[(140 − age) × weight]</span> ÷ <span class="hl">[72 × SCr]</span><br>
+      <span style="color:#16a34a">× 0.85 if female</span>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Patient</div>
+
+      <div class="field">
+        <label><span>Sex</span></label>
+        <div class="sex-toggle">
+          <div class="sex-btn active" id="btn-male" onclick="setSex('M')">♂ Male</div>
+          <div class="sex-btn" id="btn-female" onclick="setSex('F')">♀ Female</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label><span>Age</span></label>
+        <div class="input-row">
+          <input type="number" id="age" placeholder="e.g. 65" min="1" max="120" inputmode="numeric">
+          <span class="unit-tag">years</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label><span>Weight</span> — Actual Body Weight</label>
+        <div class="input-row">
+          <input type="number" id="weight" placeholder="e.g. 72" min="20" max="300" inputmode="decimal" oninput="updateIBW()">
+          <span class="unit-tag">kg</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label><span>Height</span> — for IBW / AdjBW</label>
+        <div class="input-row">
+          <input type="number" id="height" placeholder="e.g. 170" min="100" max="230" inputmode="decimal" oninput="updateIBW()">
+          <span class="unit-tag">cm</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Lab Value</div>
+      <div class="field">
+        <label><span>Serum Creatinine (SCr)</span></label>
+        <div class="input-row">
+          <input type="number" id="scr" placeholder="e.g. 1.2" min="0.1" max="30" step="0.01" inputmode="decimal">
+          <span class="unit-tag">mg/dL</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Weight Reference</div>
+      <div class="ibw-row" style="margin-bottom:8px">
+        <span class="ibw-label">Ideal Body Weight (IBW)</span>
+        <span class="ibw-val" id="ibw-display">— kg</span>
+      </div>
+      <div class="ibw-row">
+        <span class="ibw-label">Adjusted Body Weight (AdjBW)</span>
+        <span class="ibw-val" id="adjbw-display">— kg</span>
+      </div>
+      <p class="adj-note" style="margin-top:10px">AdjBW used when ABW > 30% over IBW (obese patients)</p>
+    </div>
+
+    <div class="error-msg" id="error-msg">⚠ Please fill in all fields with valid values.</div>
+
+    <button class="calc-btn" onclick="calculate()">Calculate CrCl</button>
+
+    <div class="result-card" id="result-card">
+      <div class="result-label">Creatinine Clearance</div>
+      <div class="result-top">
+        <div class="result-value" id="result-value">—</div>
+      </div>
+      <div class="result-unit">mL/min</div>
+
+      <div class="stage-bar">
+        <div class="stage-seg" id="seg1"></div>
+        <div class="stage-seg" id="seg2"></div>
+        <div class="stage-seg" id="seg3"></div>
+        <div class="stage-seg" id="seg4"></div>
+        <div class="stage-seg" id="seg5"></div>
+      </div>
+
+      <div class="stage-label" id="stage-label">—</div>
+      <div class="interp" id="interp-text">—</div>
+    </div>
+
+    <div class="disclaimer">
+      ⚠ For clinical decision support only. Always verify with clinical judgment. Not a substitute for professional assessment.
+    </div>
+
+    <span class="reset-btn" onclick="resetForm()">Clear / Reset</span>
+  </div>
+
+  <!-- DOSE GUIDE TAB -->
+  <div class="section" id="tab-dose">
+    <div class="card">
+      <div class="card-label">Common Renal Dose Adjustments</div>
+      <table class="dose-table">
+        <tr>
+          <th>CrCl Range</th>
+          <th>Typical Adjustment Notes</th>
+        </tr>
+        <tr>
+          <td>≥ 60 mL/min</td>
+          <td>Full standard doses generally appropriate for most renally cleared drugs</td>
+        </tr>
+        <tr>
+          <td>30–59 mL/min</td>
+          <td>Moderate reduction may be required. Review agent-specific guidelines (e.g., metformin, DOACs, antibiotics)</td>
+        </tr>
+        <tr>
+          <td>15–29 mL/min</td>
+          <td>Significant dose reduction needed for most agents. Avoid nephrotoxins. Reassess frequently</td>
+        </tr>
+        <tr>
+          <td>&lt; 15 mL/min</td>
+          <td>Many drugs contraindicated or require specialist guidance. Consider dialysis implications</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Drug-Specific Highlights</div>
+      <table class="dose-table">
+        <tr><th>Drug</th><th>Renal Consideration</th></tr>
+        <tr><td>Metformin</td><td>Hold if CrCl &lt; 30. Caution 30–45</td></tr>
+        <tr><td>Apixaban</td><td>Dose reduce based on CrCl + weight + age criteria</td></tr>
+        <tr><td>Rivaroxaban</td><td>Avoid if CrCl &lt; 15; adjust for VTE vs AF indications</td></tr>
+        <tr><td>Dabigatran</td><td>Contraindicated CrCl &lt; 30</td></tr>
+        <tr><td>Vancomycin</td><td>AUC-guided dosing; adjust for CrCl</td></tr>
+        <tr><td>Gabapentin</td><td>Dose based on CrCl tiers (≥60, 30–59, 15–29, &lt;15)</td></tr>
+        <tr><td>Allopurinol</td><td>Reduce dose progressively with declining CrCl</td></tr>
+        <tr><td>Ciprofloxacin</td><td>Extend interval if CrCl &lt; 30</td></tr>
+        <tr><td>Digoxin</td><td>Major renal clearance — reduce dose, monitor levels</td></tr>
+        <tr><td>Lithium</td><td>Narrow TI; close monitoring required with any renal impairment</td></tr>
+      </table>
+    </div>
+
+    <div class="disclaimer">
+      ⚠ Always consult current product monographs, renal drug handbooks (e.g., Aronoff), or clinical pharmacist before making dosing decisions.
+    </div>
+  </div>
+
+  <!-- INFO TAB -->
+  <div class="section" id="tab-info">
+    <div class="info-block">
+      <h3>Cockcroft-Gault Equation</h3>
+      <p>The most widely used formula for estimating creatinine clearance (CrCl) as a surrogate for GFR in drug dosing decisions.</p>
+      <div class="mono">
+        CrCl (mL/min) =<br>
+        [(140 − age) × weight (kg)]<br>
+        ─────────────────────────<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;72 × SCr (mg/dL)<br><br>
+        × 0.85 for female patients
+      </div>
+    </div>
+
+    <div class="info-block">
+      <h3>Weight Selection</h3>
+      <p>The original equation was derived using Actual Body Weight (ABW). Weight selection matters clinically:</p>
+      <ul>
+        <li><strong>ABW</strong> — use when patient is at or below IBW</li>
+        <li><strong>IBW</strong> — use when ABW is within 30% of IBW</li>
+        <li><strong>AdjBW</strong> — use for obese patients (ABW &gt; 130% of IBW)</li>
+      </ul>
+    </div>
+
+    <div class="info-block">
+      <h3>IBW Formulas (Devine)</h3>
+      <div class="mono">
+        Male: 50 + 2.3 × (height in cm − 152.4) / 2.54<br>
+        Female: 45.5 + 2.3 × (height in cm − 152.4) / 2.54
+      </div>
+    </div>
+
+    <div class="info-block">
+      <h3>AdjBW Formula</h3>
+      <div class="mono">
+        AdjBW = IBW + 0.4 × (ABW − IBW)
+      </div>
+    </div>
+
+    <div class="info-block">
+      <h3>CKD Staging (GFR-based)</h3>
+      <ul>
+        <li><strong>G1:</strong> ≥ 90 — Normal or high</li>
+        <li><strong>G2:</strong> 60–89 — Mildly decreased</li>
+        <li><strong>G3a:</strong> 45–59 — Mildly-moderately decreased</li>
+        <li><strong>G3b:</strong> 30–44 — Moderately-severely decreased</li>
+        <li><strong>G4:</strong> 15–29 — Severely decreased</li>
+        <li><strong>G5:</strong> &lt; 15 — Kidney failure</li>
+      </ul>
+    </div>
+
+    <div class="info-block">
+      <h3>Limitations</h3>
+      <p>CrCl via Cockcroft-Gault may be less accurate in:</p>
+      <ul>
+        <li>Extreme body weight (very obese or cachectic)</li>
+        <li>Rapidly changing renal function (AKI)</li>
+        <li>Children (&lt; 18 years) — use Schwartz formula instead</li>
+        <li>Pregnancy</li>
+        <li>Amputees or patients with muscle-wasting conditions</li>
+      </ul>
+    </div>
+
+    <div class="disclaimer">
+      ⚠ CrCl is an estimate. Clinical context, labs, and professional judgment always take precedence.
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let sex = 'M';
+
+  function switchTab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    const tabs = ['calc','dose','info'];
+    document.querySelectorAll('.tab')[tabs.indexOf(id)].classList.add('active');
+  }
+
+  function setSex(s) {
+    sex = s;
+    document.getElementById('btn-male').classList.toggle('active', s === 'M');
+    document.getElementById('btn-female').classList.toggle('active', s === 'F');
+    updateIBW();
+  }
+
+  function calcIBW(heightCm) {
+    const inchesOver5ft = (heightCm - 152.4) / 2.54;
+    const base = sex === 'M' ? 50 : 45.5;
+    return Math.max(base, base + 2.3 * inchesOver5ft);
+  }
+
+  function updateIBW() {
+    const h = parseFloat(document.getElementById('height').value);
+    const w = parseFloat(document.getElementById('weight').value);
+    if (!h || h < 100) {
+      document.getElementById('ibw-display').textContent = '— kg';
+      document.getElementById('adjbw-display').textContent = '— kg';
+      return;
+    }
+    const ibw = calcIBW(h);
+    document.getElementById('ibw-display').textContent = ibw.toFixed(1) + ' kg';
+    if (w && w > ibw * 1.3) {
+      const adj = ibw + 0.4 * (w - ibw);
+      document.getElementById('adjbw-display').textContent = adj.toFixed(1) + ' kg';
+    } else {
+      document.getElementById('adjbw-display').textContent = '— (not applicable)';
+    }
+  }
+
+  function selectWeight(abw, ibw) {
+    if (!ibw || abw <= ibw) return abw;
+    if (abw <= ibw * 1.3) return ibw;
+    return ibw + 0.4 * (abw - ibw);
+  }
+
+  function calculate() {
+    const age = parseFloat(document.getElementById('age').value);
+    const abw = parseFloat(document.getElementById('weight').value);
+    const height = parseFloat(document.getElementById('height').value);
+    const scr = parseFloat(document.getElementById('scr').value);
+    const errEl = document.getElementById('error-msg');
+
+    if (!age || !abw || !scr || age <= 0 || abw <= 0 || scr <= 0) {
+      errEl.classList.add('show');
+      return;
+    }
+    errEl.classList.remove('show');
+
+    const ibw = height ? calcIBW(height) : null;
+    const wt = ibw ? selectWeight(abw, ibw) : abw;
+
+    let crcl = ((140 - age) * wt) / (72 * scr);
+    if (sex === 'F') crcl *= 0.85;
+    crcl = Math.max(0, crcl);
+
+    document.getElementById('result-value').textContent = crcl.toFixed(1);
+
+    let stage, color, interpText;
+    const segs = document.querySelectorAll('.stage-seg');
+    segs.forEach(s => s.style.background = 'var(--border)');
+
+    if (crcl >= 90) {
+      stage = 'G1 — Normal / High'; color = '#16a34a';
+      segs[4].style.background = color;
+      interpText = '<strong>CrCl ≥ 90 mL/min:</strong> Normal renal function. Standard doses appropriate for most agents. Continue routine monitoring.';
+    } else if (crcl >= 60) {
+      stage = 'G2 — Mildly Decreased'; color = '#65a30d';
+      segs[3].style.background = color; segs[4].style.background = '#86efac';
+      interpText = '<strong>CrCl 60–89 mL/min:</strong> Mildly reduced. Most drugs at standard doses. Some agents (e.g., high-dose NSAIDs) require caution.';
+    } else if (crcl >= 45) {
+      stage = 'G3a — Mildly-Moderately Decreased'; color = '#ca8a04';
+      segs[2].style.background = color;
+      interpText = '<strong>CrCl 45–59 mL/min:</strong> Begin reviewing renally-adjusted dosing. Metformin caution. Monitor nephrotoxins closely.';
+    } else if (crcl >= 30) {
+      stage = 'G3b — Moderately-Severely Decreased'; color = '#ea580c';
+      segs[1].style.background = color;
+      interpText = '<strong>CrCl 30–44 mL/min:</strong> Dose adjustment required for many drugs. Avoid metformin. Review DOACs, antimicrobials, analgesics.';
+    } else if (crcl >= 15) {
+      stage = 'G4 — Severely Decreased'; color = '#dc2626';
+      segs[0].style.background = color;
+      interpText = '<strong>CrCl 15–29 mL/min:</strong> Significant impairment. Many agents contraindicated. Nephrology/pharmacy consult strongly recommended.';
+    } else {
+      stage = 'G5 — Kidney Failure'; color = '#991b1b';
+      segs[0].style.background = color;
+      interpText = '<strong>CrCl &lt; 15 mL/min:</strong> Kidney failure. Most renally-cleared drugs contraindicated. Consult specialist. Consider dialysis effects on drug clearance.';
+    }
+
+    const stageEl = document.getElementById('stage-label');
+    stageEl.textContent = stage;
+    stageEl.style.background = color + '18';
+    stageEl.style.color = color;
+    document.getElementById('result-value').style.color = color;
+    document.getElementById('interp-text').innerHTML = interpText;
+
+    document.getElementById('result-card').classList.add('show');
+    document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function resetForm() {
+    ['age','weight','height','scr'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('ibw-display').textContent = '— kg';
+    document.getElementById('adjbw-display').textContent = '— kg';
+    document.getElementById('result-card').classList.remove('show');
+    document.getElementById('error-msg').classList.remove('show');
+    setSex('M');
+  }
+</script>
+</body>
+</html>

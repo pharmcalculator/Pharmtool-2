@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PharmaTool Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1a2332;
+    --muted: #64748b;
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding-bottom: 48px; }
+
+  .hero {
+    background: linear-gradient(160deg, #0f2942 0%, #1a4a7a 50%, #0e7490 100%);
+    padding: 48px 24px 36px; position: relative; overflow: hidden;
+  }
+  .hero::before { content: ''; position: absolute; top: -60px; right: -60px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, #0ea5e930 0%, transparent 70%); }
+  .hero::after { content: ''; position: absolute; bottom: -40px; left: -20px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, #38bdf820 0%, transparent 70%); }
+  .hero-inner { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 99px; padding: 5px 12px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #7dd3fc; font-family: 'DM Mono', monospace; margin-bottom: 16px; }
+  .hero-badge::before { content: '◆'; font-size: 8px; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 700; color: #ffffff; line-height: 1.15; margin-bottom: 10px; }
+  .hero h1 em { font-style: italic; font-weight: 400; color: #7dd3fc; }
+  .hero p { font-size: 14px; color: #94a3b8; line-height: 1.6; max-width: 320px; }
+
+  .stats-row { display: flex; gap: 12px; margin-top: 28px; }
+  .stat { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 10px 14px; flex: 1; }
+  .stat-num { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: #7dd3fc; line-height: 1; }
+  .stat-label { font-size: 11px; color: #64748b; margin-top: 3px; }
+
+  .content { max-width: 480px; margin: 0 auto; padding: 24px 16px; }
+  .section-title { font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 14px; margin-top: 8px; }
+
+  .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; text-decoration: none; display: block; position: relative; overflow: hidden; transition: transform 0.18s, box-shadow 0.18s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; }
+  .tool-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.10); }
+  .tool-card:active { transform: scale(0.98); }
+  .tool-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 99px 0 0 99px; }
+
+  .tool-card.blue::before { background: linear-gradient(180deg, #0284c7, #0ea5e9); }
+  .tool-card.green::before { background: linear-gradient(180deg, #16a34a, #4ade80); }
+  .tool-card.orange::before { background: linear-gradient(180deg, #ea580c, #fb923c); }
+  .tool-card.purple::before { background: linear-gradient(180deg, #7c3aed, #a78bfa); }
+  .tool-card.teal::before { background: linear-gradient(180deg, #0d9488, #2dd4bf); }
+
+  .tool-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .tool-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 12px; }
+  .tool-card.blue .tool-icon { background: #e0f2fe; }
+  .tool-card.green .tool-icon { background: #dcfce7; }
+  .tool-card.orange .tool-icon { background: #fff7ed; }
+  .tool-card.purple .tool-icon { background: #f5f3ff; }
+  .tool-card.teal .tool-icon { background: #f0fdfa; }
+
+  .tool-badge { font-size: 10px; font-family: 'DM Mono', monospace; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 99px; font-weight: 500; }
+  .badge-ready { background: #dcfce7; color: #16a34a; }
+  .badge-new { background: #dbeafe; color: #1d4ed8; }
+
+  .tool-name { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .tool-formula { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .tool-desc { font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+  .tool-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .tool-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-size: 11px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .tool-arrow { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; flex-shrink: 0; }
+  .tool-card.blue .tool-arrow { background: #0284c7; }
+  .tool-card.green .tool-arrow { background: #16a34a; }
+  .tool-card.orange .tool-arrow { background: #ea580c; }
+  .tool-card.purple .tool-arrow { background: #7c3aed; }
+  .tool-card.teal .tool-arrow { background: #0d9488; }
+
+  .tool-card { animation: slideUp 0.4s ease both; }
+  .tool-card:nth-child(1) { animation-delay: 0.05s; }
+  .tool-card:nth-child(2) { animation-delay: 0.10s; }
+  .tool-card:nth-child(3) { animation-delay: 0.15s; }
+  .tool-card:nth-child(4) { animation-delay: 0.20s; }
+  .tool-card:nth-child(5) { animation-delay: 0.25s; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  .suite-footer { text-align: center; padding: 24px 16px 0; font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .suite-footer strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">PharmaTool Suite</div>
+    <h1>Clinical<br><em>Calculators</em></h1>
+    <p>Evidence-based tools for pharmacists. Fast, accurate, and mobile-ready.</p>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Live tools</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Offline ready</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">Free</div>
+        <div class="stat-label">No login needed</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="section-title">All Tools</div>
+
+  <a class="tool-card blue" href="creatinine-clearance.html">
+    <div class="tool-header">
+      <div class="tool-icon">🧪</div>
+      <span class="tool-badge badge-ready">Ready</span>
+    </div>
+    <div class="tool-name">CrCl — Adult</div>
+    <div class="tool-formula">Cockcroft-Gault Equation</div>
+    <div class="tool-desc">Estimates creatinine clearance for adults. Includes IBW, AdjBW, CKD staging, and dose interpretation.</div>
+    <div class="tool-footer">
+      <div class="tool-tags"><span class="tag">Renal</span><span class="tag">Dosing</span><span class="tag">CKD</span></div>
+      <div class="tool-arrow">→</div>
+    </div>
+  </a>
+
+  <a class="tool-card green" href="pediatric-crcl.html">
+    <div class="tool-header">
+      <div class="tool-icon">👶</div>
+      <span class="tool-badge badge-ready">Ready</span>
+    </div>
+    <div class="tool-name">CrCl — Pediatric</div>
+    <div class="tool-formula">Schwartz Formula (Bedside 2009)</div>
+    <div class="tool-desc">Calculates eGFR for children aged 1–18 using height and serum creatinine. Includes CKD staging.</div>
+    <div class="tool-footer">
+      <div class="tool-tags"><span class="tag">Pediatric</span><span class="tag">Renal</span><span class="tag">eGFR</span></div>
+      <div class="tool-arrow">→</div>
+    </div>
+  </a>
+
+  <a class="tool-card orange" href="bsa.html">
+    <div class="tool-header">
+      <div class="tool-icon">📐</div>
+      <span class="tool-badge badge-new">New</span>
+    </div>
+    <div class="tool-name">Body Surface Area (BSA)</div>
+    <div class="tool-formula">Mosteller · DuBois · Haycock · Gehan-George</div>
+    <div class="tool-desc">BSA calculation for oncology dosing with 4 formula comparisons and example chemo dose estimates.</div>
+    <div class="tool-footer">
+      <div class="tool-tags"><span class="tag">Oncology</span><span class="tag">Dosing</span><span class="tag">BSA</span></div>
+      <div class="tool-arrow">→</div>
+    </div>
+  </a>
+
+  <a class="tool-card purple" href="vancomycin.html">
+    <div class="tool-header">
+      <div class="tool-icon">💊</div>
+      <span class="tool-badge badge-new">New</span>
+    </div>
+    <div class="tool-name">Vancomycin AUC Dosing</div>
+    <div class="tool-formula">AUC/MIC · ASHP/IDSA 2020 Guidelines</div>
+    <div class="tool-desc">AUC₂₄ estimation from drug levels with dosing recommendation, trough interpretation, and nephrotoxicity guidance.</div>
+    <div class="tool-footer">
+      <div class="tool-tags"><span class="tag">Antibiotic</span><span class="tag">TDM</span><span class="tag">MRSA</span></div>
+      <div class="tool-arrow">→</div>
+    </div>
+  </a>
+
+  <a class="tool-card teal" href="iv-to-oral.html">
+    <div class="tool-header">
+      <div class="tool-icon">🔄</div>
+      <span class="tool-badge badge-new">New</span>
+    </div>
+    <div class="tool-name">IV to Oral Conversion</div>
+    <div class="tool-formula">Bioavailability-Based Switch Therapy</div>
+    <div class="tool-desc">Searchable drug database with oral equivalence calculator, switch criteria checklist, and stewardship guidance.</div>
+    <div class="tool-footer">
+      <div class="tool-tags"><span class="tag">Switch</span><span class="tag">Stewardship</span><span class="tag">AMS</span></div>
+      <div class="tool-arrow">→</div>
+    </div>
+  </a>
+
+  <div class="suite-footer">
+    <strong>PharmaTool Suite</strong> · For clinical decision support only<br>
+    Always verify with current guidelines and clinical judgment
+  </div>
+</div>
+
+</body>
+</html>
